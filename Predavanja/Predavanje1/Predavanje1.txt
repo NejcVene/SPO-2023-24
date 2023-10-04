@@ -73,4 +73,48 @@ Kje je meja med SPO in APO?
     Včasih so vso programsko opremo naredili uporabniki.
     Običajno SPO napiše proizvajalec strojne opreme.
 
+Pri malloc je dobro preverit, če je alokacija uspela:
+    int *p = (int *) malloc(sizeof(int) * N);
+    if (p == NULL) {
+        napaka
+    }
 
+Sistemski klici (syscall)
+    To je način kako program od jedra zahteva storitve.
+    Npr. storitve povezane s strojno opremo in ustvarjanje procesov.
+    Je nadzorovana vstopna točna v kodo jedra.
+    npr. man fork (fork je en syscall).
+    Sistemski klici so dokumentirani v 2. poglavju Unix Programmer's manual:
+        pog1 -> ukazi (Shell)
+        pog2 -> syscalls
+        man 2 chmod (poudarimo, da gre za 2 poglavje, kjer so sistemski klici)
+        pog3 -> funkcije iz knjižnice
+    Aplikacija npr. uporabi printf() ta pa uporabi WRITE, kar je pa sistemski klic.
+    Funkciji strcpy in atoi nimata zveze z jedrom OS, ker sta navadni funkciji (poglavje 3).
+    Sistemskih klicov se ne spreminja, saj jih določa standard (POSIX).
+
+    Primer funkcije malloc:
+        Sistemski klic sbrk poveča ali zmanjša naslovni prostor
+        procesa za določeno število bajtov.
+        Pomnilnik lahko alociramo na različne načine, malloc je le ena od možnih implementacij.
+        Lahko implementirami tudi svojo malloc funckijo, ki verjetno uporablja sistemski klic sbrk.
+
+    Aplikacija lahko uporablja sistemski klic ali funckijo iz knjižnice.
+    Nekateri sistemski klici se običajno kličejo direkot iz uporabniških programov
+    npr. fork, exec, wait ...
+
+    Računalnik deluje v dveh načinih, in sicer uporabniši in način jedra.
+    Izvajnaje programa poteka v uporabniškem načinu.
+    Ko program zahteva RAM ali vir strojne opreme, pošlje zahtevo jedru (sistemski
+    klic) in način se spremeni iz uporabniškega v način jedra
+
+.o je object file. To je preveden, ampak ni še linkan v executable.
+Za vsakega posebej lahko povemo, kako se naj prevede, linka.
+
+Obdelava napak:
+    Sistemksi klic, če ni uspel vrne negativno vrednost.
+    errno je spremenjlivka, ki nam pove, kaj je šlo narobe.
+    Imamo dve funkciji:
+        strerror -> damo noter število in vrne besedilo, ki opisuje napako s to število.
+        Torej, vrne kazalec na sporočilo.
+        perror -> sam napiše še tisto, kar mu mi dodamo.
