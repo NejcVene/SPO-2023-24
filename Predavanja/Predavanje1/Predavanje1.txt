@@ -1,0 +1,76 @@
+Delal bomo sistemsko programiranjev okolju Linux.
+Velik zadev izvira iz sistema Unix.
+Večino reči bomo delali v lupini (Shell).
+
+Sistemsko programiranje (vsebina):
+    1. Delo s datotekami (vhod/izhod).
+    2. Procesi, med-procensa komunikacija, niti.
+    3. Mrežno programiranje, vtičnice.
+    4. Gonilniki (preprosti znakovni gonilniki),
+       Raspberry PI.
+
+Vaje se začnejo naslednji teden (12.10).
+Za C bo sproti razlagal zadeve.
+Ocena vaj je polovica ocene predmeta.
+Sprotne naloge (vsak teden, ki si delajo na vajah) - te se potem zagovorijo.
+Zagovor je možen tudi kasenje, vendar dobiš manj točk.
+Za opravljene vaje rabiš 50% točk.
+
+Izpit ima teorijo (nekaj vprašanj) in programiranje
+(podoben kot jih bomo delali na vajah). Lahko imaš
+literaturo (tist kar bo na učilnici in kar imaš sabo,
+na USB je lahko naprimer).
+Primer izpita bo objavljen, ko bo čas za to.
+
+-------------------------------------------------------------------------------
+
+Uvod v sistemsko programiranje:
+
+Kakšna je razlika med sistemo in aplikacijo programsko opremo?
+    Programsko opremo delimo na APO (application sw) in SPO (system sw).
+    APO zaganja uporabnik, torej dela speicifične naloge za uporabnika npr. igra, PB
+    praktično kar koli. Tipično je, da ga uporabnik zažene in konča.
+    Ko uporabnik zažene program je potrebno le-tega naložiti v pomnilnik, da se lahko
+    začne izvajat. Napisan v nekem visoko nivojskem jeziku.
+    Pogosto so omejeni viri.
+
+    SPO deluje pogosto v ozadju in dlje časa se izvaja, predenj se zaključi.
+    Izvaja splošne naloge. Običajno zapisana v nekem nizko nivojskem jeziku npr.
+    assembly, C (razlog da se ti uporabljajo je lažji dostop do pomn. in virov sistema).
+    Imamo tudi bare-metal sistema (nek microcontroller).
+    Gre za množnico programov, ki nadzirajo delovanje strojne opreme:
+        - CPE.
+        - glavni pomn.
+        - V/I sistem.
+    in omogočajo delovanje APO - opravlja s procesi, datotekami, V/I operacije,
+    varnost, adminisistracija, večopravilnost ...
+    SPO ni odvisna od APO, vendar njej pa omogoča delovanje.
+    Deluje bolj v povezavi s računalniškimi viri, kot pa s uporabnikom.
+    Potrebno je upoštevati strojno opremo, saj je od nje odvisno.
+    Samodejno zbiranje smeti (garbage collector) ni običajno, torej moramo to sami početi.
+
+Sistemsko programiranje vključuje načrtovanje in pisanje SPO.
+Primeri tega:
+    - OS.
+    - Komunikacijska programska oprema.
+    - Gonilniki, ki omogočajo komunikacijo s strojno opremo.
+    - Vmesna programska oprema.
+    - Pripomočki (npr. za stisaknje datotek, pregled procesov ...).
+    - Lupina oz. Shell in okenski sistemi.
+    - Orodja za razvoj programske opreme (npr. linker, prevajalnik, zbirniki ...).
+
+Operacijski sistem:
+    - Gre za množico programov, ki ponujajo storitve za aplikacijske programe
+      oz. omogoča njihovo unčinkovito delovanje.
+    - Uprabljanje s shrambo.
+    - Ustvarjanje, brisanje in sinhronizacija procesov.
+    - Upravljanje s pomnilnikom.
+    - Jedro je osrednji del OS-a.
+    - Gonilniki za nadzor nad napravami.
+    - Uporabniški vmesnik.
+
+Kje je meja med SPO in APO?
+    Včasih so vso programsko opremo naredili uporabniki.
+    Običajno SPO napiše proizvajalec strojne opreme.
+
+
