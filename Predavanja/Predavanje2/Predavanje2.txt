@@ -1,0 +1,81 @@
+Datatoečni vhid/izhod
+
+Sistemski klici:
+ - open -> odpre datoteko
+ - close -> zapre datoteko
+ - read -> za branje datoteke
+ - (l)seek -> iskanje po datoteki; premaknemo
+   se na poljubno mesto
+Teti sisteski klici so direktni, torej nebufferiran V/iskanje
+Kaj je razlika med write in printf:
+    - printf je funkcija iz knjižnice, ki uporabi
+      sistemski klic write (ima pa še dodatne zadeve).
+      Običajno ima še en buffer, kamor shranjuje podatke,
+      omogoča še dodatne zadeve. Naved write zna izpisovat
+      samo znake.
+    - write je pa osnoven sistemski klic.
+Buffer je medpomnilmik v katerega se začasno shranjujejo podatki.
+Ni rečeno, da se podatki takoj izpišejo, možmo je, da so nekaj časa
+v tem bufferju npr. v bufferju bojo tolk dolgo, dokler ne pritisnemo
+enter.
+Če je pa nebufferiran se pa takoj izpiše, torej takoj gre na izhod.
+Vsak sisteski klic se izvede v jedru.
+Te funkcije niso del standardnega ANIS C, ampak POSIX.
+POSIX oz. portable opertaing system inteface.
+
+Vsaka datoteka, ki je odprta ima svoj datotečni opisnik oz. file descritor:
+ - za vsako odprto datoteko je en ta.
+ - če datoteka ni odprta, seveda tega nima.
+ - datotečni opisnik je ne negativno celo število npr. 0, 1, 2 ...
+ - ko se datoteko odpre ji je dodeljen prvi prosti datotečni descritor.
+ - zakaj jih pa uporabljamo? Ker je to bolj očinkovito.
+Imamo tudi nekaj vnaprej določenih datotoečni opisnikov:
+    • Standardni vhod (standard input)
+        - Opisnik STDIN_FILENO: običajno 0 (nikjer sicer ne piše, da mora biti 0)
+    • Standardni izhod (standard output)
+        - Opisnik STDOUT_FILENO: običajno 1
+    • Standardni izhod za napake (standard error)
+        - Opisnik STDERR_FILENO: običajno 2
+        - Posebna vrsta STDIN.
+        - Ta se uporablja zato, ker želimo, da se napaka hitreje izpiše kot
+          navaden izhod.
+Nizi v C se ponavadi poda kot kazalec na prvo črko niza. Nizi se zaključujejo s \0 kar je 0 v ASCII.
+
+open ima mode, ki so dostopna dovoljenja. Ta so pomembna, če kreiramo novo datoteko.
+oflag je funkcija ali določene konstante, ki so definirane v <fcntl.h>
+Obvezne konstante (teh 5 se izključuje - lahko je samo
+ena):
+    • O_RDONLY (običajno ima vrednost 0) --> 0000
+    • O_WRONLY (običajno ima vrednost 1) --> 0001
+    • O_RDWR (običajno ima vrednost 2)   --> 0010
+    • O_EXEC: samo za izvrševanje (execute only)
+    • O_SEARCH: dovoljenja za iskanje (velja za direktorije)
+<fcntl.h> oz. file-control.
+Imamo tudi opcijske kontante:
+    • O_APPEND: pisanje na konec datoteke
+    • O_CREAT: če datoteka še ne obstaja, se ustvari. Če že obstaja se ne kreira.
+    • v tem primeru je nujno navesti mode, ki vsebuje dostopne dovolilne
+      bite; pri odsotnosti O_CREAT se mode ignorira
+    • O_DIRECTORY: generira napako, če se pot ne nanaša na direktorij
+    • O_EXCL: generira napako, če je naveden tudi O_CREAT in
+      datoteka že obstaja (tj., proces jo hoče ustvariti sam)
+    • O_NONBLOCK: ne-blokirajoč način, če gre za FIFO ali posebno
+      datoteko (za gonilnike).
+    • O_TRUNC: odreže (truncate) datoteko na velikost 0 (pri pisanju)
+    • O_SYNC: pri pisanju se čaka, da se I/O dejansko fizično izvede
+    ^ Zaradi nekega razloga se teti definirani v osmiškem sistemu.
+    ^ Odvisno od pozicije bitov je katero konstate je.
+    Če želimo uporabiti write only in append uporabimo operacijo OR:
+        000001 O_WRONLY
+     OR 10...0 O_APPEND
+        _______
+        100001 --> rata zdej kombinacija teh dveh
+[username in password (za virtualko): student]
+find /usr/include -name fcntl.h <-- je uporaben ukaz za iskanje datotek.
+grep -r (za rekurzivno) "O_WRONLY" /usr/include/*.h <-- omogoča iskanje v datotekah posamezen niz
+
+Funkcija close datoteko zapre. Ko se proces konča, torej program se vse datoteko
+avtomatsko zaprejo. Nekateri programi to izkoristijo in ne zapirajo datotek. To ni
+najboljša ideja, zapiranje datoteke tudi sprosti kakršenkoli zaklep, ki ga
+lahko ima proces na datoteki.
+
