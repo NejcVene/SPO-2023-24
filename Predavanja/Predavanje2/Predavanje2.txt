@@ -79,3 +79,27 @@ avtomatsko zaprejo. Nekateri programi to izkoristijo in ne zapirajo datotek. To 
 najboljša ideja, zapiranje datoteke tudi sprosti kakršenkoli zaklep, ki ga
 lahko ima proces na datoteki.
 
+Funkcija read:
+    - sistemski klic read(int fd (file desc. od open),
+                          void *buff (kazalec na buffer; tipično bo char, ni pa nujno),
+                          size_t nbytes (koliko bajtov bomo prebrali; običjano je to long int));
+    - (podatkovni tip) vrne ssize_t (gre si SINGED size_t; signed je zato, da lahko vrne neg. vrednost, kar pomeni, da gre za napako).
+    - vrne število prebraniih bajtov.
+    - lahko vrne 0 (EOF), če gre za konec datoteke
+    - lahko vrne -1 za napako.
+    - podamo število željenih prebranih bajtov, zato da ne presežemo buffer.
+    - koliko bajtov naj se prebere je ponavadi kar enako velikosti bufferja (NIKOLI VEČJE OD BUFFERJA!)
+    - bere od trenutnega odmika naprej
+    - file v buffer
+
+Funkcija write:
+    - buffer v datoteko
+    - write(int fd (file desc. od open), 
+            const void *buff (ta buffer je zdej read only),
+            size_t nbytes (koliko bajtov želimo zapisat));
+    - vrne ssize_t iz enakega razloga.
+    - piše od trenutnega odmika naprej.
+    - če gre za append opcijo, potem predenj začne pisat gre
+      avtomatsko do konca datoteke in od tam naprej pisal.
+    - običajno se preverja, če jih je zapisal toliko bajtov kolikor
+      smo želeli. Če jih ni, sprožimo napako.

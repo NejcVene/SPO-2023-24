@@ -14,6 +14,10 @@ int main(void) {
         perror("Napaka.\n"); // boljše tole dat za napako
     }
 
+    if (close(fd) < 0) {
+        perror("Nemorem zapredi datoteke.\n");
+    } // zapri datoteko
+
     return 0;
 
 }
