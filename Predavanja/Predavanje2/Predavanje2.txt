@@ -103,3 +103,58 @@ Funkcija write:
       avtomatsko do konca datoteke in od tam naprej pisal.
     - običajno se preverja, če jih je zapisal toliko bajtov kolikor
       smo želeli. Če jih ni, sprožimo napako.
+
+[CTRL + d = EOF (end of file)]
+
+Lovjenjen napak:
+    if (fun(...) == x) {
+        printf("Napaka\n");
+        exit(1);
+    }
+    ^ to lahko naredimo na več načinov npr. funkcijo al macro
+    printf() --> fprintf() piše v STDERR, kar je boljše za napake.
+    ˇ
+    #define err(msg) {fprintf(STDERR, "Napaka: %s\n", ); exit(1);}
+    npr. if (neki() != n) {
+            err("Tole ne dela")
+         }
+
+Funkcija lseek:
+    - določa odmik
+    - lseek(int fd (od open file desc.),
+            off_t offset,
+            int whence (lahko je SEEK_SET, SEEK_CUR, SEEK_END));
+    - vrne podatek tipa off_t
+    - trenutni odmik:
+        lseek(fd, 0, SEEK_CUR); --> koliko je trenuten odmik
+    - če je odmik večji od same datoteke, potem se v datoteki naredi "luknja"
+    int fd;
+    if ((fd = open("file.hole", O_CREAT | O_WRONLY | O_TRUNC, 0666)) < 0) {
+        err("Open error")
+    }
+    char buff1[] = "abcdefghij";
+    if (write(fd, buff1, 10) != 10) {
+        err("Buff1 write)
+    }
+    if (lseek(fd, 40, SEEK_SET) < 0) {
+        err("Napaka lseek");
+    }
+    V ustvarjeno luknjo se ustvarijo sami "\0"
+
+Jedro ima 3 strukture, ki se tičejo datotek:
+    1. Tabela procesov -> vsi procesi, ki tečejo na sistemu
+       Vnos v tej tabeli:
+            fd0, fd1, fd2, fd3 ...
+            zastavice teh opisnikov
+            kazalci na datoteke
+    2. Datotečna tabela (file table) -> posamezen vnos v tej
+       tabeli, se nananša na eno datoteko. Imajo tudi zastavice za
+       se beleži status datoteke, trenutni odmik in kazalec na vnode.
+    3. Struktura vnode -> vsaka odrta datoteja vsebuje takšno datoteko.
+       Vsebuje iNode (meta podatki o datoteki) (Struktura, ki opisuje vse razen imena ter vsebine)
+       Slika na prostojnici št. 25
+    Kaj pa če imata dva procesa odprta enako datoteko?
+        Slika na prostojnici št. 26
+        Oba kažeta na isti vnode, ki pa kaže na iNode.
+        Različno je to, da imata različen trenutni odmik.
+        
