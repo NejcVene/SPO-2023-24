@@ -1,0 +1,11 @@
+Predprocesor
+    npr. #ifdef preveri, če je neka stvar definirana
+    #define DEBUG
+    #ifdef DEBUG
+        ...
+    #endif
+
+argv je kazalec na polje, v katerem so kazalci na nize:
+    argv -> [char *] -> "ime_programa"
+            [char *] -> "prvi_argument"
+            [char *] -> "drugi_argument"
