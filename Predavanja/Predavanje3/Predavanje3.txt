@@ -1,0 +1,67 @@
+Procesi, ki imajo odprte datoteke:
+    Inode so vse informacije o datoteki, razen imena
+    ter vsebine (skoraj vsi metapodatki).
+    Če imata dva procesa odprta isto datoteko imata vsaka svoj
+    odmik (tako zagotovimo različne vnose npr. eden lahko bere, drugi lahko bere in piše).
+
+Atomične operacije:
+    Atomska operacija - imamo proces, ki bi dal nekaj na koncu datoteke
+        nekoč: smo odpri datoteko s open, šel do konca datoteke s lseek(fd, 0, SEEK_END)
+               in nato uporabili write(fd, ...)
+               Težava v tem je, da nimamo zagotovila, da se bosta ta dva ukaza
+               izvedla tako, da se vmes ne bo zgodilo nič drugega. Vemo, da se procesi
+               menjajo med seboj in lahko se zgodi, da se izvede seek in nato pride
+               do contex switch (mejave konteksta) in se drugi program gre izvajat. Šele nato
+               po tem drugem programu se izvede write od prvega. Kaj bi se sedaj
+               zgodilo, če bi drugi porgram tudi delal kaj v tej datoteki - možno bi bilo
+               da bi datoteka ratala večja in posledično prvi program ne bi več imel
+               pravilnega odmika (prej si je zapomnil, da kaže na konec, vedar se je zaradi
+               spremembe v datoteki da zamaknil in ne kaže več na konec).
+               Torej moramo zagotoviti da se izvede atomsko - da se skupaj
+               izvede.
+        Atomski (zdaj): open omogoča opcijo O_APPEND in po write(fd, ...) bo šel na konec
+        datoteke. Write se bo izvedel tako, da bo upošteval O_APPEND in se še nekrat
+        premaknil na konec - gre na trenutni konec datoteke, tudi če se je ta vsem zaradi
+        contex switcha spremenila.
+
+dup in dup2 (podvojitev opsinika):
+    Duplicira nam datotekčni opisnik
+    int dup(int fd).
+    Vrne novi opsinik oz. novi file descriptor (fd).
+    dup2 nam pa omogoča, da sami navedemo kateri bo novi fd npr. 25
+    dup2(int fd, int fd2).
+    Zakaj bi pa sploh podvajali opisnike?
+        ls -l file nofile > tmp1
+
+Funkcija fcntl:
+    Dela neko kontrolo, kar je odvinso od ukaza, ki se izvaja.
+    Spremeni lastnosti datoteke, ki je že odprta
+    Lahko podovji opsinik, pridobivanje zastavic opsinika, nastaljenaje
+    zastavic ...
+    int fcntl(fd, cmd)
+    CMD je lahko:
+        F_GETFL -> za get flags; vrne kot vrednost funkcije zastavice statusa datoteke.
+    
+    ./getfl1 3 (3 je fd)
+    argv[0] = getftl1
+    argv[1] = 3
+    atoi() prevede niz v število.
+    Vrne val, ki vsebuje različne bite (O_ACCMODE določata samo zadnja dva bita!) - v ta namen
+    uporabimo masko (&) -> accmode = val & O_ACCMODE;
+    Ostanetejo samo tisti biti, ki določajo O_ACCMODE.
+
+Datoteke in direktoriji
+    Datoteka je zaporednje bajtov.
+    ls -i -> pove iNode vrednost za datoteko (po iNode se datoteka loči).
+    c ->characted device drive
+    b -> block device -> ponavadi gre za neke večje količin.
+    iNode je strutura, ki vsebuje vse metapodatke o datoteki (razen imena
+    in vsebine).
+    iNode številka je edinstvena, vendar je to vezano na particijo. Število datotek
+    je toliko, kolikor imamo iNode-u na voljo.
+    Podatke, na katere označuje Inode se hranijo v posebni
+    struktri, in sicer Struktura stat.
+    S stat() pridobimo informacije o datoteki:
+        int stat(pathaname, struct stat *buf)
+        int fstat(int fd, struct stat *bug) -> vzame fd, kar pomeni, da more biti datoteka odprta.
+        Sicer vrne -1 kar pomni napaka.
