@@ -130,3 +130,49 @@ Funkcija umask:
     mode_t umask(mode_t cmask);
     umask(0) -> nastavim masko 0 (nobenega bita ne prepovemo - vse je dolovoljeno).
     umask(0066) -> preproveduje vse pravice za group in other.
+
+Funkcija chmod:
+    Omogoča spremembo dovoljnej dostopa do datotek.
+    int chmod(const char *pathanme, mode_t mode);
+    int fchmod(int fd, mode_t mode); <- za že odprte datoteke
+    Dovoljenja je možno spremeniti, če je efektivni ID
+    enak ID lastnika datoteke
+        • Ali če ima proces dovoljenja superuserja
+    Absolutni mode:
+        bar 0644
+    Relativno:
+        preberemo trenuten mode (uporabimo stat) in mu potem spremenimo.
+
+Funkcija chown:
+    Sprememba UID ali GID datoteke, torej lastništva datoteke
+    (change ownership).
+    int chown(const char *pathname, uid_t owner, gid_t group);
+    int fchown(int fd, uid_t owner, gid_t group);
+    int lchown(const char *pathname, uid_t owner, gid_t group);
+    Vrnejo 0, če OK, sicer -1
+
+Šele ko ni več linkov (povezav) se lahko datoteka izbriše. Zato je tudi
+ime funkcije za brisanje unlink.
+
+309(starš) -> 126(testdir) 
+49654 drwxr-xr-x 2 nejcv nejcv 4096 Oct 18 15:32 .
+43144 drwxr-xr-x 3 nejcv nejcv 4096 Oct 18 15:32 ..
+                 ^ število linkov
+
+Funkcija Link ustvari povezavo, unlink odstrani povezavo (ko povezav zmanjka, ga zbriše).
+
+Čas:
+    Vsaka datoteka ima 3 časovna polja:
+        • st_atime, čas zadnjega dostopa
+        • st_mtime, čas zadnje modifikacije
+        • st_ctime, čas zadnje spremembe i-node statusa
+            • sprememba dovoljenj, UIDa, ipd. Sama datoteka ni
+              spremenjena
+    Funkcija utime, nam omogoča da spremenimo dostopni in modifikacijski čas datoteke.
+    int utime(const char *pathname, const struct utimbuf *times);
+    Vrne 0, če OK, sicer -1.
+    utimbuf je struktura: <- če daš za tale parameter NULL, bo datoteko spremenil na trenutni čas (takrat, ko je bil program zagnan).
+        struct utimbuf {
+            time_t actime; // čas dostopa
+            time_t modtime; // čas modifikacije
+        }
