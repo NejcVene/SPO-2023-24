@@ -62,6 +62,71 @@ Datoteke in direktoriji
     Podatke, na katere označuje Inode se hranijo v posebni
     struktri, in sicer Struktura stat.
     S stat() pridobimo informacije o datoteki:
-        int stat(pathaname, struct stat *buf)
+        int stat(const char *pathaname, struct stat *buf)
         int fstat(int fd, struct stat *bug) -> vzame fd, kar pomeni, da more biti datoteka odprta.
-        Sicer vrne -1 kar pomni napaka.
+        int lstat(const char *pathname, struct stat *buf) -> podobno kot stat, vendar da dela za simbolične povezave.
+        Sicer vrne -1 kar pomeni napaka.
+        struct stat {
+            mode_t st_mode; // tip datoteke in mode (dovoljenja)
+            ino_t st_ino; // številka i-node
+            dev_t st_dev; // št. naprave (datotečni sistem)
+            dev_t st_rdev; // št. naprave za posebne datoteke
+            nlink_t st_nlink; // št. povezav (links)
+            uid_t st_uid; // uid lastnika
+            gid_t st_gid; // gid lastnika
+            off_t st_size; // velikost v bajtih (za običajne dat.)
+            time_t st_atim; // čas zadnjega dostopa
+            time_t st_mtim; // čas zadnje modifikacije
+            time_t st_ctim; // čas zadnje spremembe statusa dat.
+            blksize_t st_blksize; // najprimernejša velikost I/O bloka
+            blkcnt_t st_blocks; // št. alociranih 512-bajtnih blokov
+        }
+
+Tipi datotek:
+    Posebne datoteke -> za gonilnike naprav
+    FIFO -> datoteka za medprocesno komunikacijo (v resnici ni datoteka, ampak strutura v pomn.).
+    Vtičnica (socket) -> omrežna povezava.
+    Simbolična povezava -> datoteka, ki vsebuje pot do neke druge datoteke (kakor bljižnica).
+    Tip datoteke je zakodiran v st_mode (del strukture stat):
+        • S_ISREG -> ali je regularna datoteka
+        • S_ISDIR -> ali je direktoriji
+        • S_ISCHR -> character device (znakovna naprava)
+        • S_ISBLK -> bločna naprava
+        • S_ISFIFO -> FIFO
+        • S_ISLNK -> ali je simbolična povezava
+        • S_ISSOCK -> ali je omrežna povezava
+
+Uporabniki in skupine:
+    Vsak uporabnika ima svoj user ID (neka številka).
+    super user ima to število 0.
+    Uporabnik je lahko član več skupin.
+    Realni UID pove, kdo smo v resnici
+    Efektivni ID določa dovoljenja dostopa do datotek (tole je odvisno od tega, kdo je lastnik datoteke; npr. poženeš datoteko od super
+    user-ja, dobiš za to datoteko njegove pravice, ampak sam za to datoteko in nič drugega.)
+    Izvšljiva datoteka mora imeti posebno zastatico (ta se vidi na poziciji x). Če je Set-User-ID postavljen, potem pomeni
+    da gre tudi za izvršljivo datoteko (program).
+
+Dovoljenja za dostop do datotek:
+    user   group  others (ugo)
+     rwx    rwx    rwx
+    Obstaja 9 “dovolilnih” bitov za dostop do datotek,
+    razdeljenih v 3 skupine (<sys/stat.h>)
+        • S_IRUSR user-read     0400 r--------
+        • S_IWUSR user-write    0200 -w-------
+        • S_IXUSR user-execute  0100 --x------
+        • S_IRGRP group-read    0040 ---r-----
+        • S_IWGRP group-write   0020 ----w----
+        • S_IXGRP group-execute 0010 -----x---
+        • S_IROTH other-read    0004 ------r--
+        • S_IWOTH other-write   0002 -------w-
+        • S_IXOTH other-execute 0001 --------x
+    • Definirane so tudi konstante
+        • S_IRWXU 0700 rwx------
+        • S_IRWXG 0070 ---rwx---
+        • S_IRWXO 0007 ------rwx
+
+Funkcija umask:
+    Določa masko za "mode" pri ustvarjanju novih datotek
+    mode_t umask(mode_t cmask);
+    umask(0) -> nastavim masko 0 (nobenega bita ne prepovemo - vse je dolovoljeno).
+    umask(0066) -> preproveduje vse pravice za group in other.
