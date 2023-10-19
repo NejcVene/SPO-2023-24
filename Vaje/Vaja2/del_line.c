@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdbool.h>
+#include <string.h>
 
 #define err(msg) { fprintf(stderr, "Error: %s\n", msg); exit(1); }
 
@@ -15,113 +15,46 @@ void moveCursorPosition(int, char *);
 
 int main(int argc, char **argv) {
 
-    int fd, fd2, readBytes, delLineCount = atoi(argv[2]), n = 1, newOffset, c = 0, sum = 0;
-    printf("To delete: %d\n", delLineCount);
-    bool lineFound = false;
+    if (argc < 4 || strcmp(argv[1], "-n") != 0) {
+        err("Wrong arguments")
+    }
+    int readFd, writeFd, readBytes, delLineCount = atoi(argv[2]), lineCounter = 1, newOffset, c = 0, sumOfBytes = 0;
     char buffer[BUFFER_SIZE], bufferSetPos[BUFFER_SET_POSITION_SIZE];
-    if ((fd = open(argv[3], O_RDONLY)) < 0 || (fd2 = open("tmp", O_WRONLY | O_TRUNC | O_CREAT, 0644)) < 0) {
+    // try to open the file that was specified and open/create a tmp file to write new content to
+    if ((readFd = open(argv[3], O_RDONLY)) < 0 || (writeFd = open("tmp", O_WRONLY | O_TRUNC | O_CREAT, 0644)) < 0) {
         err("Could not open source file")
     }
-    while (1) {
-        c = readFile(fd, buffer, delLineCount, &n);
-        sum += c;
-        if (c == 0) {
-            break;
-        }
-        writeFile(fd2, buffer, c);
-        // printf("!%d!\n!n = %d!\n", c, n);
-        for (int i = 0; i<c; i++) {
-            printf("%c", buffer[i]);
-        }
+    // repeat until c is 0
+    // this is used to write content BEFORE the line to be deleted
+    while ((c = readFile(readFd, buffer, delLineCount, &lineCounter))) {
+        sumOfBytes += c;
+        writeFile(writeFd, buffer, c);
     }
-    int offset = lseek(fd, 0, SEEK_CUR);
-    // printf("Offset: %d\n", offset);
-    offset = lseek(fd, sum, SEEK_SET);
-    // printf("Offset: %d\n", offset);
-    moveCursorPosition(fd, bufferSetPos);
-    // printf("SUM: %d\nSUM total: %d\n", sum, sum + delLineCount);
-    while ((readBytes = read(fd, buffer, BUFFER_SIZE)) > 0) {
-        // printf("Read bytes1: %d\n", readBytes);
-        for (int i = 0; i<readBytes; i++) {
-            printf("%c", buffer[i]);
-        }
-        writeFile(fd2, buffer, readBytes);
+    // seek to beginning of file
+    if ((newOffset = lseek(readFd, 0, SEEK_CUR)) == -1) {
+        err("Could not seek to beginning of file")
     }
+    // by using sumOfBytes seek to the last line before the line to be deleted
+    if ((newOffset = lseek(readFd, sumOfBytes, SEEK_SET)) == -1) {
+        err("Could not seek to new posititon")
+    }
+    // skip the line to be deleted
+    moveCursorPosition(readFd, bufferSetPos);
+    // write everything after the skiped line
+    while ((readBytes = read(readFd, buffer, BUFFER_SIZE)) > 0) {
+        writeFile(writeFd, buffer, readBytes);
+    }
+    // try and get rid of all links to the file that user specified.
+    // removing them means that the file will be deleted.
     if (unlink(argv[3]) == -1) {
         err("Could not unlink")
     }
-    if (rename("tmp", argv[3])) {
+    // try to rename "tmp" to whatever file user specified
+    if (rename("tmp", argv[3]) == -1) {
         err("Could not rename")
     }
-    /*
-    while ((readBytes = read(fd, buffer, BUFFER_SIZE)) > 0) {
-        printf("Read bytes1: %d\n", readBytes);
-        for (int i = 0; i<readBytes; i++) {
-            printf("%c", buffer[i]);
-        }
-    }
-    */
-    /*
-    printf("File descriptor: %d\n", fd);
-    c = readFile(fd, buffer, delLineCount);
-    printf("!%d!\n", c);
-    for (int i = 0; i<c; i++) {
-        printf("%c", buffer[i]);
-    }
-    */
-    // writeFile(fd2, buffer, readFile(fd, buffer, delLineCount));
-    /*
-    moveCursorPosition(fd, bufferSetPos);
-    while ((readBytes = read(fd, buffer, BUFFER_SIZE)) > 0) {
-        writeFile(fd2, buffer, readBytes);
-    }
-    */
-    if (close(fd) < 0 || close(fd2) < 0) {
-        err("Could not close source file")
-    }
-    return 0;
-    /*
-    while ((readBytes = read(fd, buffer, BUFFER_SIZE)) > 0) {
-        printf("Read bytes1: %d\n", readBytes);
-        for (int i = 0; i<readBytes; i++) {
-            c++;
-            if (buffer[i] == '\n') {
-                n++;
-                if (n == delLineCount) {
-                    printf("Line found\n");
-                    printf("!%d!\n", c);
-                    if (write(fd2, buffer, c) != c) {
-                        err("Write failed")
-                    }
-                    lineFound = true;
-                }
-            }
-            printf("%c", buffer[i]);
-        }
-        if (lineFound) {
-            break;
-        }
-        printf("\n");
-    }
-    */
-    printf("N: %d\n", n);
-    // read head premakni naprej do naslednjena \n
-    while (bufferSetPos[0] != '\n') {
-        if ((readBytes = read(fd, bufferSetPos, BUFFER_SET_POSITION_SIZE)) == -1) {
-            err("Cound not read")
-        }
-    }
-    while ((readBytes = read(fd, buffer, BUFFER_SIZE)) > 0) {
-        printf("Read bytes1: %d\n", readBytes);
-        for (int i = 0; i<readBytes; i++) {
-            printf("%c", buffer[i]);
-        }
-        printf("\n");
-        if (write(fd2, buffer, readBytes) != readBytes) {
-            err("Could not write a second time")
-        }
-    }
-    if (close(fd) < 0 || close(fd2) < 0) {
+    // try and close both files
+    if (close(readFd) < 0 || close(writeFd) < 0) {
         err("Could not close source file")
     }
 
@@ -131,36 +64,40 @@ int main(int argc, char **argv) {
 
 int readFile(int fd, char *buffer, int delLineCount, int *pN) {
 
-    // printf("N is: %d\n", *pN);
-    if ((*pN) == delLineCount) {
-        // printf("END\n");
+    if (*pN == delLineCount) {
         return 0;
     }
-    int readBytes, c = 0;
+    // byteCounter is used, to track the number of bytes it takes
+    // to reach the correct line
+    int readBytes, byteCounter = 0;
     while ((readBytes = read(fd, buffer, BUFFER_SIZE)) > 0) {
-        // printf("Read bytes1: %d\n", readBytes);
+        // go throug read bytes one at a time
         for (int i = 0; i<readBytes; i++) {
-            // printf("%c", buffer[i]);
-            c++;
+            byteCounter++;
+            // check, if char is a new line
             if (buffer[i] == '\n') {
+                // increment line number counter
                 (*pN)++;
-                if ((*pN) == delLineCount) {
-                    // printf("LINE FOUND\n");
-                    return c;
+                // line to be deleted is found
+                if (*pN == delLineCount) {
+                    // return how many bytes it takes to get to that line
+                    return byteCounter;
                 }
             }
         }
+        // if this is true, then it means we read 256 bytes without finding
+        // the correct line. This then means its not in this buffer or is
+        // partly in it
         if (readBytes == BUFFER_SIZE) {
-            // printf("BUFFER FULL\n");
-            return c;
+            return byteCounter;
         }
     }
 
-    // printf("HERE and n is %d\n", *pN);
-    return c;
+    return 0;
 
 }
 
+// write bytesToWrite bytes from buffer into a file specified by fd 
 void writeFile(int fd, char *buffer, int bytesToWrite) {
 
     if (write(fd, buffer, bytesToWrite) != bytesToWrite) {
@@ -169,9 +106,11 @@ void writeFile(int fd, char *buffer, int bytesToWrite) {
 
 }
 
+// used to skip one whole line
 void moveCursorPosition(int fd, char *buffer) {
 
     int readBytes;
+    // keep reading one byte till we reach \n.
     while (buffer[0] != '\n') {
         if ((readBytes = read(fd, buffer, BUFFER_SET_POSITION_SIZE)) == -1) {
             err("Cound not read")
@@ -179,21 +118,3 @@ void moveCursorPosition(int fd, char *buffer) {
     }
 
 }
-
-/*
-while ((readBytes = read(fd, buffer, BUFFER_SIZE)) > 0) {
-        printf("Read bytes1: %d\n", readBytes);
-        for (int i = 0; i<readBytes; i++) {
-            if (buffer[i] == '\n') {
-                n++;
-                if (n == delLineCount) {
-                    printf("Line found\n");
-                    lineFound = true;
-                    break;
-                }
-            }
-        }
-        if (lineFound) {
-            break;
-        }
-    }*/
