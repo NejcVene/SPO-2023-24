@@ -29,4 +29,34 @@ Branje direktorijev:
     NAME_MAX je sistemsko odvisna dolžina imena (ponavadi je 255).
     Če nas zanima podrobnejše zadeve, kličemo potem stat.
 
+Kako vemo, da gre za navadno datoteko in ne npr. direktorij?
+    Uporabimo makro S_ISREG
+
+Posebne datoteke naprav:
+    Vsak datotekčni sistem im število naprave major in minor.
+    dev_t -> 12 (major) + 20 (minor)
+                 ^glavno število  ^ pomožno število
+    Zakodirani sta v tipu dev_t
+
+Če želimo imeti konsisteno med diskom in bufferjem potrebujemo
+oz. uporabimo sync. To je se vidi pri tem, da je pametno
+USB ejectat, ker ga tako prisilimo, da zapiše vse zadeve
+iz buferjev na disk oz. USB, ki jih morda še ni.
+To torej uporabimo, da se buffer in V/I naprava uskladita.
+
+============================================================================
+
+Standardna V/I knjižnica
+V/I buffer je del predpomnilnika (kernel buffer).
+Ni rečeno, da se zadeve takoj zapišejo v datoteko (lahko je, da moramo malo počakati).
+Zavedati se moramo, da je sistemski klic hitrejši od operacije na disku.
+Tudi SSD je še relativno počasen v primerjavi s sistemskim klicem.
+Kako se klic sploh izvede:
+    Jedro sproži neko past (interrupt). Pove se številka sistemskega klica.
+    Jedo mora sprožiti past, preveriti parametre, izvesti kopiranje v buffer ...
+    Dejanski čas operacije je lahko dosti daljši.
+    Želimo si, da je število sistemskih klicov čim manjše, da pohitrimo celotno zadevo.
+
+Kako velikost bufferja vpliva na število sistemskih klicev:
     
+ 
