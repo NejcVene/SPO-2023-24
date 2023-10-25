@@ -1,0 +1,32 @@
+Funkcija stat:
+    Opiše v posebno strukturo informacije o datoteki.
+    Tej funkicji podamo kazalec na to strukturo, ki
+    jo moramo imeti prej že kreirano.
+
+Funkciji mkdir & rmdir:
+    Že po imenu lahko skepamo kaj delata.
+
+Branje direktorijev:
+    Uporabimo opendir(const char* pathName)
+    Vrne kazalec na posebno strukturo, ki se imenuje DIR.
+    DIR *opendir(const char* pathName)
+    NULL pointer vrne, če kaj ni vredu.
+
+    Za branje imamo readdir(DIR *dp (to je tisto, kar vrne opendir)).
+    Vrne kazalec na struct dirent <-- to je vsebina direktorija.
+    Bere toliko časa dokler ne pride do konca.
+    Ko pride do konca vrne NULL, ali če je napaka.
+
+    Poznamo tudi closedir(DIR *dp (tisto kar vrne opendir))
+    Vrne int, pri čemer je 0 OK, -1 pa napaka.
+
+    struct dirent {
+        ino_t d_ino; // št. i-node
+        char d_name[NAME_MAX+1]; // ime datoteke
+    };
+    d_ino je iNode number
+    d_name je pa 
+    NAME_MAX je sistemsko odvisna dolžina imena (ponavadi je 255).
+    Če nas zanima podrobnejše zadeve, kličemo potem stat.
+
+    
