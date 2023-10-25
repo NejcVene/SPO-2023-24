@@ -58,5 +58,112 @@ Kako se klic sploh izvede:
     Želimo si, da je število sistemskih klicov čim manjše, da pohitrimo celotno zadevo.
 
 Kako velikost bufferja vpliva na število sistemskih klicev:
-    
- 
+    BUFSIZE     ČAS     SIS. KLICI
+        1       8s      2M
+        10      0.8s    200K
+        100     0.15s   20K
+        1000    0.028   20K
+        10000   0.12    cca. 200
+
+dd je convert and copy a file
+dd  if (input_file) = /dev/zero
+of (output_file) = bigfile.txt
+count = 1024
+bSize = 1024
+
+To knjižnico določa standart ISO C
+Knjižnica <stdio.h> ne uporablja opisnikov, amprak strani (streams).
+Stream se pa nanaša na nek deskriptor.
+Standardi tokovi:
+    STD_IN
+    STD_OUT
+    STD_ERR
+    ^ tole so kazalci na nek stream.
+Funkcija fopen vrne kazalec na strukturo datoteke.
+    FILE *fopen;
+    Ta FILE struktura vsebuje:
+        - fd,
+        - podatki o bufferju (ta se pa uporablja za to, da je čim manj sistemskih klicov).
+    Uporabnik te strukture ne uporablja sam, ampak do nje dostopa
+    preko različnih funkcij.
+Sistemski klici so nebufferirani, medtem funkcije kot so printf in podobne
+pa so bufferirane. Namen tega je, da je delovanje hitrešje.
+
+Imamo tri vrste medpomnjenja:
+    - polno medpomnenje --> V/I operacije se izvede takrat, ko je buffer poln.
+    - vrstično medpomnjenje --> ko pride \n se ta izprazne (flush)
+    - brez medpomnenja --> stderr stream je običajno nebufferiran, zato da se sporočilo o napaki
+      peikaže čim hitreje.
+
+Odpiranje toka:
+    FILE *fopen(cosnt char* path, const char* type)
+    Vrne kazalec na datoteko, če je uspešen.
+    NULL če pride do napake.
+    Oba parametra sta niza.
+    Type vzame naslednje parametre:
+        • r: odpri za branje (read)
+            • O_RDONLY (isto kot tole)
+        • w: reži na velikost 0 ali ustvari za pisanje (write)
+            • O_WRONLY | O_CREAT | O_TRUNC
+        • a: odpri za pisanje na koncu datoteke (append) ali ustvari za pisanje
+            • O_WRONLY | O_CREAT | O_APPEND
+        • r+: odpri za branje in pisanje
+            • O_RDWR
+        • w+: reži na 0 ali ustvari za branje in pisanje
+            • O_RDWR | O_CREAT | O_TRUNC
+        • a+: odpri ali ustvari za branje in pisanje na koncu datoteke
+            • O_RDWR | O_CREAT | O_APPEND
+
+Datoteko zapremo s fclose:
+    int fclose(FILE *fp (tist kar fopen vrne))
+    Vrne 0 če je OK, -1 za napako.
+
+Branje in pisanje toka:
+    Ko odpremo tok, lahko izbiramo med 3 tipi
+    neformatiranega V/I.
+    • znakovni V/I (getc, fgetc, getchar, putc, fputc, putchar)
+        • po en znak naenkrat
+    • vrstični V/I (fgets, fputs)
+        • po ena vrstica naenkrat
+    • direktni V/I (fread, fwrite)
+        • običajno za binarne datoteke
+
+Formatiran V/I:
+    - Izhod:
+        • printf
+        • fprintf
+        • (sprintf) --> izpiše v string, ne pa na izhod
+    - Vhod:
+        • scanf
+        • fscanf
+        • sscanf
+
+getc je MAKRO, fgetc() je pa funkcija.
+getchar je definiran kot getc(stdin)
+Če pride do napake lahko uporabimo:
+    getc, fgetc, getchar vrnejo EOF tudi ob napaki.
+    Če nas zanima vrsta
+    napake, imamo na voljo:
+        - int ferror(FILE *fp)
+        - int feof(FILE *fp);
+
+#include <stdio.h>
+int putc(int c, FILE *fp);
+int fputc(int c, FILE *fp);
+int putchar(int c);
+Vse tri vrnejo c ob uspehu, EOF ob napaki
+putchar je fputs(stdout)
+
+Vrstične vhodne funkcije:
+    char *fgets(char *buf, int n, FILE *fp);
+    ^ n pove koliko je velik buffer
+    char *gets(char *buf);
+    ^ tukaj pa ne povemo koliko je velikost bufferja in tudi NE bo vrnil napake of buffer overflow!
+    Obe vrneta buf, če OK, in NULL ob koncu datoteke ali ob napaki.
+
+Vrstične izhodne funkcije:
+    int fputs(const char *str, FILE *fp);
+    int puts(const char *str);
+    Vrneta nenegativno vrednost, če OK, sicer EOF
+
+
