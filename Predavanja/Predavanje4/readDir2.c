@@ -40,12 +40,14 @@ int main(int argc, char **argv) {
         if (!S_ISREG(statBuf.st_mode)) {
             continue;
         }
+        /*
         strcpy(novoIme, dirP->d_name);
         if (statBuf.st_mtime > casPrej) {
             strcat(novoIme, "_novo");
             rename(dirP->d_name, novoIme);
             printf("FILE: %s %s %ld\n", dirP->d_name, novoIme, statBuf.st_mtime);
         }
+        */
     }
 
     if (closedir(dp) < 0) {
