@@ -16,14 +16,9 @@ int main(int argc, char **argv) {
     char fileInfo[10];
     char *fileInfoP = fileInfo;
 
-    // check number of arguments
-    if (argc < 2) {
-        err("To few arguments", "Usage: <name>")
-    }
-
     // try to open the specified directory
-    if (!(dp = opendir(argv[1]))) {
-        err("Could not open target directory", argv[1])
+    if (!(dp = opendir("."))) {
+        err("Could not open target directory", ".")
     }
 
     // try to read directory contents
@@ -35,12 +30,12 @@ int main(int argc, char **argv) {
         // determine its type and mode
         determineFileType(statBuf.st_mode, fileInfoP);
         // print result
-        printf("%s %ld %s\n", fileInfo, statBuf.st_nlink, dirP->d_name);
+        printf("%s %2ld %s\n", fileInfo, statBuf.st_nlink, dirP->d_name);
     }
 
     // try to close directory
     if (closedir(dp) < 0) {
-        err("Could not close target directory", argv[1])
+        err("Could not close target directory", ".")
     }
 
     return 0;
