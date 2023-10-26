@@ -8,7 +8,8 @@
 #define err(msg, reason) { fprintf(stderr, "Error: %s %s\n", msg, reason); exit(1); }
 
 void printMode(mode_t);
-void callChmod(char *, long int);
+void callChmod(char *, mode_t);
+void getFileStat(char *, struct stat*);
 
 int main(int argc, char **argv) {
 
@@ -18,27 +19,28 @@ int main(int argc, char **argv) {
 
     struct stat statBuf;
     char *remainder;
-    long int mode = strtol(argv[1], &remainder, 8);
+    mode_t mode = strtol(argv[1], &remainder, 8);
     if (mode == 0) {
+        getFileStat(argv[2], &statBuf);
         switch (argv[1][0]) {
             case 'u':
-                printf("Going U\n");
-                callChmod(argv[2], argv[1][1] == '+' ? (statBuf.st_mode) : (statBuf.st_mode & ~S_ISUID));
+                callChmod(argv[2], (argv[1][1] == '+' && argv[1][2] == 's') ? (statBuf.st_mode | S_ISUID) : (statBuf.st_mode & ~S_ISUID));
                 break;
             case 'g':
+                callChmod(argv[2], (argv[1][1] == '+' && argv[1][2] == 's') ? (statBuf.st_mode | S_ISGID) : (statBuf.st_mode & ~S_ISGID));
                 break;
             default:
                 err("Unknown argument", argv[1])
                 break;
         }
+        getFileStat(argv[2], &statBuf);
+        printMode(statBuf.st_mode);
+        return 0;
     }
     callChmod(argv[2], mode);
-    if (stat(argv[2], &statBuf) < 0) {
-        err("Could not stat file", argv[1])
-    }
+    getFileStat(argv[2], &statBuf);
     printMode(statBuf.st_mode);
     
-
     return 0;
 
 }
@@ -56,23 +58,30 @@ void printMode(mode_t st_mode) {
            );
     // check for permission bits 
     if (S_ISUID & st_mode) {
-        fileInfo[2] = 's';
+        fileInfo[19] = 's';
     }
     if (S_ISGID & st_mode) {
-        fileInfo[5] = 'S';
+        fileInfo[22] = 'S';
     }
     if (S_ISVTX & st_mode) {
-        fileInfo[8] = 'T';
+        fileInfo[25] = 'T';
     }
     printf("%s\n", fileInfo);
 
 }
 
-void callChmod(char *file, long int mode) {
+void callChmod(char *file, mode_t mode) {
 
-    printf("%lo\n", mode);
     if (chmod(file, mode) < 0) {
         err("Cannot change permissions for", file)
+    }
+
+}
+
+void getFileStat(char *file, struct stat *statBuf) {
+
+    if (stat(file, statBuf) < 0) {
+        err("Could not stat file", file)
     }
 
 }
