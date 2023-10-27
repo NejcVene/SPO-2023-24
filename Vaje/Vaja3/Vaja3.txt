@@ -1,0 +1,8 @@
+Za stat rabiš kazalec na strukturo, ki se ga potem poda kot argument
+funkciji stat().
+
+mode_t.st_mode --> poda pravice datoteke.
+Če je ma user "s" lastnost je set user id in execute.
+Če userju vzamemo ta s bi mu moral ostati če execute.
+
+Če mamo pa g+s in odvzamemo to s, executeta tudi ni več.
