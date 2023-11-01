@@ -93,15 +93,10 @@ FILE *findLine(FILE *f, int n) {
     char copyBuffer[bytesRead];
     // rewind to beginning and copy those bytes into buffer
     rewind(f);
-    if (fread(copyBuffer, sizeof(copyBuffer), 1, f) != 1) {
-        err("Could not find correct line", "fread")
-    }
+    fread(copyBuffer, sizeof(copyBuffer), 1, f);
     // create a new file and write copied bytes into it
     FILE *tmpF = openFile("tmp", "w");
-
-    if (fwrite(copyBuffer, sizeof(copyBuffer), 1, tmpF) != 1) {
-        err("Could not find correct line", "fwrite")
-    }
+    fwrite(copyBuffer, sizeof(copyBuffer), 1, tmpF);
     
     // return tmp files' pointer
     return tmpF;
