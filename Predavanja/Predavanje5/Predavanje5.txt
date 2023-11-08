@@ -1,0 +1,83 @@
+Določitev tipa bufferiranja:
+    - void setbuf(FILE *fp (kazalec na tok),
+                  char *buf (kazalec na nek buffer, ki že obstaja)
+                 );
+        To funkcijo kličemo, ko je npr. datoteka, torej tok
+        že odprt. Kliče se za fopen().
+        S tem lahko vklopimo ali izklopimo bufferiranje, če mu damo NULL pointer (za char *buf).
+        Izključimo ga lahko npr. pri pisanju v datoteko brez bufferiranja.
+    - int setvbuf(FILE *fp,
+                  char *buf,
+                  int mode,
+                  size_t size);
+        S setvbuf lahko določimo tudi tip bufferiranja. Argument mode:
+            • _IOFBF polno (čaka, dokler se buffer ne napolni do konca)
+            • _IOLBF linijsko (čaka, dokler se ne pojavi new line "\n")
+            • _IONBF nebufferirano (nič ne čaka, ampak kar preda na izhod)
+
+Za izplakovanje tokova lahko uporabimo:
+    int fflush(FILE *fp);
+    • Ta funkcija povzroči, da se vsi še nezapisani podatki za
+        tok predajo jedru
+    • Če je fp enako NULL, se vsi izhodni tokovi izplaknejo!
+    Če je vse OK vrne 0, sicer EOF (-1) ob napaki.
+
+setvbuf(stdout, buf, _IOFBF (full buffering), sizeof(buf) (velikost bufferja));
+printf("He"); // izpiše "He" na stdout
+fflush(stdout);
+setvbuf(stdout, NULL, _IONBF, 0); // iključimo bufferiranje
+printf("llo w");
+Kot rezultat tega programa dobimo:
+
+Formatiran vhod:
+    scanf:
+        - int x;
+        - int scanf("%d", &x);
+    fscanf:
+        - int fscanf( FILE *fp, const char *format, ...);
+    sscanf:
+        - int sscanf(const char *buf, const char *format, ...);
+    Vse tri vrnejo število prebranih stvari, ter EOF ob napaki ali koncu
+    datoteke.
+
+=================================================================================
+
+Procesi:
+    Proces je primerek programa, ki se izvaja. Poleg binarne slike programa
+    ima tudi informacine o npr. odprtih datotekah, kdo je lastnih procesa ...
+    Proces je lahko iz ene ali več niti. Nit je enota procesa, ki se samostojno izvaja.
+    Proces ima lahko eno ali več niti. S nitmi upravlja scheduler (poseben program).
+    Ko je konec progama oz. procesa se ga odstrani.
+    Vsak proces ima svojo števiko, in sicer PID (process ID).
+    Obstajajo posebni procesi:
+        • PID 0: razvrščevalnik, swapper (sistemski proces znotraj jedra)
+        • PID 1: init (uporabniški proces s pravicami superuserja)
+        • PID 2: pagedeamon (proces jedra)
+    Poleg PID ima proces tudi druge identifikatorje:
+        • User ID, group ID.
+
+Funkcija, ki vrne PID je:
+    - pid_t getpid(void);
+      Vrne svoj PID.
+    - pid_t getppid(void);
+      Vrne PID od starša.
+    - uid_t getuid(void);
+      Vrne ID od uporabnika, kateremu ta proces pripada.
+
+Funkcija fork:
+    - Je edini način, ki nam omogoča kreiranja novega procesa, torej proces ustvari
+      dodaten proces.
+    - pid_t fork(void);
+    - Ko se ta funkcija izvede, nastane še en proces, ki je koija tega, ki ga je ustvaril (ima seveda drugačen PID).
+    - Ta PID, ki ga vrne; 0 v otroku; PID ima otroka v staršu; -1 ob napaki.
+    Primer:
+        pid = fork();
+        if (pid < 0) {
+            err()
+        } else if (pid == 0) {
+            koda otroka
+        } else {
+            koda starša
+        }
+        Kodo tu naprej po default izvajata oba procesa (če si pa to želimo, je pa odvisno).
+    - starš ima lahko več otrok, vendar otrok ima lahko samo enega starša.
