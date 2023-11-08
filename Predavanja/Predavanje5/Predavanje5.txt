@@ -141,9 +141,29 @@ Funkciji wait in waitpid:
     • Termination status je bitno zakodiran
 
     V <sys/wait.h> so definirani trije makroji:
-        • WIFEXITED(status): true, če je otrok končal normalno
-        • WIFSIGNALED(status): true, če je otrok končal nenormalno
-        • WIFSTOPPED(status): true, če je otrok trenutno ustavljen
+        • WIFEXITED(status <- to je statloc kazalec): true, če je otrok končal normalno
+        • WIFSIGNALED(status <- to je statloc kazalec): true, če je otrok končal nenormalno
+        • WIFSTOPPED(status <- to je statloc kazalec): true, če je otrok trenutno ustavljen
     Funkcija pr_exit uporablja te makroje za izpis
     termination statusa.
+
+    Trije primeri končanja otroka:
+        - otrok kliče exit(7) -> starš dobi številko 7
+        - otrok kliče abort() -> to generira signal SIGABRT
+        - otrok deli status s 0 -> to generira signal SIGFPE
+
+Funkcije exec:
+    - Nadomesti otroški proces s programom iz diska.
+    - Imamo 6 različic:
+        - l -> lista argumentov
+        - v -> vektor (array) argumentov
+        - p -> path (pot)
+        - e -> okolje (evironment)
+
+Funkcija system:
+    - znotraj programa izvedemo ukaz, kot da bi ga napisali v lupino (shell)
+    - int system(const char *cmdstring);
+    - je vmesnik na shell in ne na OS.
+    - system je implementiran s klici funkcij fork, exec in waitpid.
+    - Če gre za napako lahko vrne -1, 127 (če exec ne uspe).
 
