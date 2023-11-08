@@ -81,3 +81,69 @@ Funkcija fork:
         }
         Kodo tu naprej po default izvajata oba procesa (če si pa to želimo, je pa odvisno).
     - starš ima lahko več otrok, vendar otrok ima lahko samo enega starša.
+    - Otrok se izveja od klica fork() funckije naprej.
+
+Otrok podeduje veliko zadev, ena od teh so odprte datoteke starša, torej njihove FD-je:
+    • Pomembno je, da si starš in otrok delita isti odmik
+    (offset)
+    • Če otrok piše v neko datoteko, se tudi staršu spremeni
+    odmik
+    • Obstajata 2 metodi upravljanja z opisniki po klicu fork
+        • starš čaka na otroka, da konča (uporabimo npr. sleep - to je najenostavnejše).
+        • starš in otrok gresta vsak po svoje. Po forku oba zapreta
+            opisnike, ki jih ne rabita. Tako ni zmešnjave. Tako običajno
+            delajo omrežni strežniki.
+Obstajata dve uporabi forka:
+    - kreiranje novega procesa (dupliciranje starša)
+    - kadar želi proces izvršiti drug program -> naredimo otroka, da ta izvaja
+      drugi program iz diska. To naredimo s uporabo exec().
+      V drugih sistemih je to "spawn".
+
+Funkcija vfork:
+    - narejen v tem smislu, da ne podeduje reči od starše, ker bo izvajal drugi
+      program in bi bilo nesmisleno podedovati reči, ki jih ne potrebujemo.
+    - Hkrati jamči, da otrok teče prvi (dokler ne kliče exec ali exit, tedaj tudi starš nadaljuje).
+    - imamo razliko pri exit(), in sicer ta bo izplaknil buffer, _exit() pa tega NE BO naredil.
+
+Funkcije exit:
+    - So 3 načini normalnega končanja procesa in 2
+      načina nenormalnega končanja procesa.
+    - Normalno končanje:
+        • return iz funkcije main (isto kot če kličemo exit)
+        • klic funkcije exit. To vključuje klic exit handlerjev, ki so
+          bili registrirani z atexit, in zapiranje std. V/I tokov.
+        • _exit (sistemski klic)
+    - Nenormalno končanje:
+        • klic abort (generira signal SIGABRT)
+        • ko proces prejme določene signale
+
+Ko se otrok konča, je to tem potrebno obvestiti starša. Otrok ima nek
+status končanja (neko število), ki ga starš dobi s klicanje funkcije wait().
+Če se starš konča prej od otroka, ta ne more več obvstiti starša, zato dobi "skrbnika", in sicer
+proces init (novejše verzije Linux-a uporabio "subreaper").
+Možno je tudi to, da starš ni bil obveščen o zaključku otroka -> tako dobimo zombi proces, zato ker
+ta zaseda sistemske vire, kljub temu, da se ne izvaja več.
+
+Funkciji wait in waitpid:
+    - Ko se proces konča, jedro pošlje njegovemu staršu signal SIGCHLD.
+    • Starš lahko ta signal ignorira, ali pa uporabi nek
+      obdelovalnik signala (signal “handler”)
+    • Če proces kliče wait, ker je prejel signal SIGCHLD, wait
+      vrne takoj
+    • Če wait kličemo ob naključnem času, lahko blokira
+    #include <sys/wait.h>
+    pid_t wait(int *statloc);
+    pid_t waitpid(pid_t pid, int *statloc, int options);
+    Vrneta proc. ID otroka, če OK, in -1 ob napaki.
+    • Če je otrok zombie, se wait takoj vrne z njegovim statusom
+    • Termination status se vpiše, kamor kaže kazalec statloc
+    • Termination status se ignorira, če je statloc NULL
+    • Termination status je bitno zakodiran
+
+    V <sys/wait.h> so definirani trije makroji:
+        • WIFEXITED(status): true, če je otrok končal normalno
+        • WIFSIGNALED(status): true, če je otrok končal nenormalno
+        • WIFSTOPPED(status): true, če je otrok trenutno ustavljen
+    Funkcija pr_exit uporablja te makroje za izpis
+    termination statusa.
+
