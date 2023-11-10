@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
     if (argc < 2) {
         // create "stevila.bin" if there are none
         createFile();
-        err("To few arguments. Created file", "stevila.bin")
+        err("To few arguments. Created file", "stevila")
     }
 
     // open file specified by user
@@ -45,18 +45,22 @@ int main(int argc, char **argv) {
 void createFile() {
 
     // create or rewrite "stevila.bin"
-    FILE *f = fopen("stevila.bin", "wb");
+    FILE *f = fopen("stevila", "wb");
     if (!f) {
-        err("Could not open file", "stevila.bin")
+        err("Could not open file", "stevila")
     }
 
     // write content of this array into the file
-    float content[] = {5, 1.11, 2.22, 3.33, 4.44, 5.55};
+    int lines[] = {5};
+    if (fwrite(lines, sizeof(lines), 1, f) != 1) {
+        err("Could not write to file", "stevila")
+    }
+    float content[] = {1.11, 2.22, 3.33, 4.44, 5.55};
     if (fwrite(content, sizeof(content), 1, f) != 1) {
-        err("Could not write to file", "stevila.bin")
+        err("Could not write to file", "stevila")
     }
     if (fclose(f) == EOF) {
-        err("Could not close file", "stevila.bin")
+        err("Could not close file", "stevila")
     }
 
 }
@@ -64,11 +68,11 @@ void createFile() {
 int bytesToRead(FILE *f) {
 
     // get the first number from the file, which is an integer
-    float buf[1];
+    int buf[1];
     if (fread(buf, sizeof(buf), 1, f) != 1) {
         err("Could not get first byte of file", "bytesToRead")
     }
 
-    return (int) buf[0];
+    return buf[0];
 
 }
