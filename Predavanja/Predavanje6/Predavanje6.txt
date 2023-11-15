@@ -58,3 +58,36 @@ Kaj naredimo, ko se pojavi signal?
         typedef void Sigfunc(int);
         Sigfunc *signal(int, Sigfunc* (kazalec na funkcijo, torej padaj kar ime od funkcije)).
 
+Funkcija pause():
+    Proces gre v spanje, dokler se ne pojavi nek signal.
+
+Funkciji kill() in raise():
+    Kill pošlje signal procesu ali skupini procesov.
+    Raise dovili procesu, da pošlje signal samemu sebi.
+    int kill(pid_t pid, int signo);
+    int raise(int signo);
+    Obe vrneta 0, če OK; sicer -1.
+
+Funkciji alarm() in pause():
+    Alarm požene časovnik, ki bo potekel enkrat v prihodnosti.
+    Ko poteče, se generiral signal SIGALRM.
+        Če ga ignoriramo ali ne ujamemo, se proces konča -> privzeta akcija
+        Večina procesov, ki alarm uporablja, signal ujame.
+        unsigned int alarm(unsigned int seconds);
+        Vrne 0 ali število sekund do preteka prej registriranega alarma (t.i.
+        neprespani čas).
+        Seconds določa, kdaj bo potekel časovni in posledično generiral signal.
+            • Funkcija pause začasno ustavi (odloži, “suspendira”)
+              klicoči proces, dokler ni ujet kak signal.
+        alarm(0) -> izklopi časovnik
+
+Funkcija abort():
+    Pošlje signal SIGABRT. Najem tega je, da ga ujame in predenj se proces zaključi
+    naredi še neak reči npr. "pospravi".
+
+Funkcija sleep:
+    Povzroču ustavitev klicočega procesa, dokler se ne naredi nekaj od tega:
+        - mine secods sekund (v tem primeru vrne 0)
+        - signal je ujet in se signal handler vrne
+
+
