@@ -7,7 +7,7 @@ int parse(char *, char *[]);
 int main(void) {
 
     char *args[64];
-    char str[] = "gcc -o main main.c -Wall -lm -lpthead -fopenmp";
+    char str[] = " gcc  -o   main main.c -Wall -lm -lpthead -fopenmp";
     int el = parse(str, args);
 
     for (int i = 0; i<el; i++) {
@@ -43,3 +43,21 @@ int parse(char command[], char *args[]) {
     return index;
 
 }
+
+/*
+
+while(*p != '\n') {
+    if (*p == ' ' || *p == '\t') {
+        poln = 0;
+        *p = '\0';
+        p++;
+    } else {
+        if (poln == 0) {
+            *args = p;
+            p++;
+            poln = 1;
+        }
+    }
+}
+
+*/
