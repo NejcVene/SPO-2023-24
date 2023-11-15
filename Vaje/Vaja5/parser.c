@@ -8,7 +8,7 @@ int parse2(char *, char *[]);
 int main(void) {
 
     char *args[64];
-    char str[] = "          gcc  -o  main main.c -Wall -lm -lpthead -fopenmp";
+    char str[] = "  gcc     -o      main        main.c      -Wall       -lm     -lpthead        -fopenmp";
     int el = parse2(str, args);
 
     for (int i = 0; i<el; i++) {
