@@ -1,0 +1,60 @@
+Procesi v ozadju:
+    Proces v ozdaju ni povezan s terminalon, njegov
+    starš pa je proces init.
+    Takšni procesi običajno tudi daemoni tečejo dolgotrajno.
+    starš -> otrok1 -> otrok2
+    če končamo otrok1, otrok2 potane "sirota".
+    Proces init sedaj "posvoji" otroka2.
+
+Kritično stanje:
+    V splošnem ne vemo, ali se otrok začne izvrševati pred stašem, ali obratno.
+    Kritično stanje se pojavi, kadar več procesov dela na istih podatkih in je
+    rezultat odvisen od zaporedja, po katerem tečejo procesi.
+    Da se izgonemu kritičnemu stanju in pollingu je potrebno komunikacija med procesi. V ta namen
+    uporabimo signale.
+
+=====================================================
+
+Signali:
+    Signal je neke vrste sw prekinitve, ki omogočajo obravnavo asinhornskih
+    dogodkov (to pomeni, da se lahko pojavi kadarkoli).
+    Vsak signal se začne s SIG in v <signal.h> so ti definirani.
+    Proces v resnici ne more testirati neke spremenjivke, ki bi mu povedala, če se je ta pojavi.
+    Namesto tega mora proces povedati jetru, kaj storiti, ko se signal dejansko pojavil.
+
+Kdo generira signale:
+    Signale lahko generirajo različni pogoji:
+        - terminal, ko uporabnik pritisne doočene tipke
+          npr. CTRL + c. -> SIGINT  (zaustavitev programa)
+               CTRL + \  -> SIGQUIT (zaustavitev in core dump)
+               CTRL + z  -> SIGTSTP (začasna ustavitev)
+        - funkcija kill
+               Ta generia signal. Z enega procesa pošljemo signal drugemu procesu.
+        - ukaz kill
+               Lahko pošiljamo signale. Ta ukaz je le vmesnik za
+               funkcijo kill.
+        - sw pogoji
+               Lahko generirajo signale, kadar je treba proces o čem obvestiti
+               npr. SIGALRM, SIGPIPE, SIGURG
+
+Kaj naredimo, ko se pojavi signal?
+    Imamo tri opcije:
+        1. Ga ignorira
+           Večino se jih da ignorirati, vendar SIGKILL ne moreš.
+           To ni dobro početi, ker so lahko posledice.
+        2. Ga ujame:
+           Vnaprej povemo jedru, kaj narediti, ko pride takšen signal.
+           Torej mu dodamo signal handler.
+        3. Izvede se privzeta akcija:
+           Pri večini signalov, je privzeto, da proces prekinejo.
+
+    void (*signal(int signo, void (*func)(int)))(int);
+    Vrne kazalec na prejšnji rokovalnik signala (signal handler)
+    • func je bodisi:
+        • konstanta SIG_IGN (sistem ignorira signal)
+        • konstanta SIG_DFL (privzeta akcija)
+        • naslov funkcije, ki se jo kliče, ko se pojavi signal (rokovalnik signala)
+    ^ To lahko naredimo lepše:
+        typedef void Sigfunc(int);
+        Sigfunc *signal(int, Sigfunc* (kazalec na funkcijo, torej padaj kar ime od funkcije)).
+
