@@ -55,7 +55,6 @@ while(*p != '\n') {
         if (poln == 0) {
             *args = p;
             p++;
-            poln = 1;
         }
     }
 }
