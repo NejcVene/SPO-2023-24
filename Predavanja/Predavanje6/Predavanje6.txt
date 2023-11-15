@@ -90,4 +90,43 @@ Funkcija sleep:
         - mine secods sekund (v tem primeru vrne 0)
         - signal je ujet in se signal handler vrne
 
+============================================================
+
+Medprocesna komunikacija
+
+Kaj bomo delali:
+    - Cevi
+    - FIFO
+    - IPC System V (sporočilne vste, semaforji, skupni pomnilnik)
+
+Cevi so najstarejša oblika medprocesne komunikacije v Unix-u
+Imajo 2 omejitvi:
+    • so half-duplex: podatki gredo samo v eni smeri
+    • lahko jih uporabljamo samo med procesi, ki imajo
+      skupnega prednika. Običajna je cev med staršem in
+      otrokom.
+
+Funkcija pipe:
+    int pipe(int pfd[2] (to je array dveh file descriptorjev));
+    Vrne 0, če je OK; sicer -1.
+    pfd[0] -> tisti, ki je odprt za branje
+    pfd[1] -> tisti, ki je odprt za pisanje
+
+    Če zapremo pisalni konec, potem bo tisti, ki izvaja read dobil EOF (vrne mu 0).
+
+    Če zapremo bralni konec, pisanje pa še vedno izvajamo, potem dobimo napako, in sicer
+    signal SIGPIPE.
+
+    Otrok piše, start bere:
+        Otrok nato zapre pfd[1], start ga pa ne. Jedro sedaj
+        tukaj smatra, starš lahko še vedno piše. Read ne vrne 0. Rezultat tega je, da bo starš
+        bral in pisal samemu sebi.
+
+Podvojitev opisnikov na STDIN ali STDOUT:
+    Starš piše v cev (pfd[1]).
+    Otrok ne izvaja svoje kode, ampak s exec() izvaja nek program (program more)
+    Ta program pa deluje tako, da bere STDIN (ne ve za to cev).
+    Otrok ima pfd[0] in pfd[1]. pfd[1] mu zapremo.
+    
+
 
