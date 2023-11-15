@@ -59,28 +59,21 @@ int main(void) {
 
 int parse(char command[], char *args[]) {
 
-    int index = 0;
-    args[index++] = command; // get the pointer to the first string
-    for (int i = 0; i<strlen(command); i++) {
-        // if it is an whitespace, then save the next character's memory location into char pointer array
-        // it saves the next character location, not whitespaces'
-        if (command[i] == ' ') {
-            args[index++] = &command[i + 1];
+    int commandIndex = 0, argsIndex = 0, isEmpty = 0;
+    while (command[commandIndex] != '\0') {
+        if (command[commandIndex] == ' ' || command[commandIndex] == '\t') {
+            command[commandIndex] = '\0';
+            isEmpty = 0;
+        } else {
+            if (isEmpty == 0) {
+                args[argsIndex++] = &command[commandIndex];
+                isEmpty = 1;
+            }
         }
+        commandIndex++;
     }
 
-    // if there is only one string, dont run this
-    if (index > 1) {
-        // if there is more than one, replace every whitespace with '\0'
-        for (int i = 0; i<index; i++) {
-            *(args[i] - 1) = '\0';
-        }
-    }
-    // make the last elelment NULL
-    args[index] = NULL;
-
-    //return how many elements there are
-    return index;
+    return argsIndex;
 
 }
 
