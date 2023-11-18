@@ -127,6 +127,8 @@ Podvojitev opisnikov na STDIN ali STDOUT:
     Otrok ne izvaja svoje kode, ampak s exec() izvaja nek program (program more)
     Ta program pa deluje tako, da bere STDIN (ne ve za to cev).
     Otrok ima pfd[0] in pfd[1]. pfd[1] mu zapremo.
+
+Git test.
     
 
 
