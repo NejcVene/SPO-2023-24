@@ -9,7 +9,7 @@
 void handlerSIGINT(int);
 void handlerSIGALRM(int);
 
-int setTime, called;
+int setTime;
 
 int main(void) {
 
@@ -32,7 +32,6 @@ int main(void) {
 void handlerSIGINT(int sigNum) {
 
     // print how much seconds where left and set timer to 5
-    called = 1;
     printf("Prejel sem signal %d\n", sigNum);
     printf("unslept_time = %d\n", alarm(0));
     alarm(5);
