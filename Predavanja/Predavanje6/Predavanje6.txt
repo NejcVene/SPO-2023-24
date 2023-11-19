@@ -79,7 +79,7 @@ Funkciji alarm() in pause():
         Seconds določa, kdaj bo potekel časovni in posledično generiral signal.
             • Funkcija pause začasno ustavi (odloži, “suspendira”)
               klicoči proces, dokler ni ujet kak signal.
-        alarm(0) -> izklopi časovnik
+        alarm(0) -> izklopi časovnik in vrne koliko časa je ŠE OSTALO.
 
 Funkcija abort():
     Pošlje signal SIGABRT. Najem tega je, da ga ujame in predenj se proces zaključi
@@ -127,8 +127,6 @@ Podvojitev opisnikov na STDIN ali STDOUT:
     Otrok ne izvaja svoje kode, ampak s exec() izvaja nek program (program more)
     Ta program pa deluje tako, da bere STDIN (ne ve za to cev).
     Otrok ima pfd[0] in pfd[1]. pfd[1] mu zapremo.
-
-Git test.
     
 
 
