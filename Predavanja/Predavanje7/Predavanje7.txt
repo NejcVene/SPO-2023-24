@@ -153,6 +153,18 @@ Funkcija semctl:
     Hkrati lahko hrani le eno od teg vrednosti. V danem
     trenuntku se uporablja samo en član unije.
     
+Funkcija semop:
+    Ta funkcija izvaja operacije na množici semaforjev.
+    int semop(int semid, struct sembuf semoparray[],
+              size_t nops);
+    • semoparray je kazalec na polje semaforskih operacij
+    • nops je število operacij (elementov) v polju.
+    • Struktura sembuf:
+        struct sembuf {
+        unsigned short sem_num; /* št. semaforja */
+        short sem_op; /* operacija */
+        short sem_flg; /* IPC_NOWAIT, SEM_UNDO */
+      };
 
 
     
