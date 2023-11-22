@@ -41,7 +41,15 @@ IPC System V:
     Če si izberemo pojuben (še neuporabljen) ključ, je treba
     pri ustvarjanju strukture postaviti zastavico IPC_CREAT,
     ki strukturo ustvari, če še ne obstaja.
-
+    struct ipc_perm {
+        uid_t uid; /* efekt. uid lastnika */
+        gid_t gid; /* efekt. gid lastnika */
+        uid_t cuid; /* efekt. uid kreatorja */
+        gid_t cgid; /* efekt. gid kreatorja */
+        mode_t mode; /* dostop */
+        unsigned long seq;
+        key_t key;
+    }
     Strukutra za dostopna dovoljenja:
     
 
