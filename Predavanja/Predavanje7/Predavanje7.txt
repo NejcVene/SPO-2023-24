@@ -140,6 +140,19 @@ Funkcija semget:
 
 Funkcija semctl:
     Izvaja razne opercije nad semaforjem.
+    int semctl(int semid (ID semaforja),
+               int semnum (0, če je eden),
+               int cmd);
+    Unija semun:
+        union semun {
+            int val; // za SETVAL vrednost semaforja
+            struct semid_ds *buf; // za IPC_STAT in IPC_SET
+            unsigned short *array; // za GETALL in SETALL
+        };
+    Ker je unija, je njena velikost enaka velikost največjega elementa, ki ga vsebuje.
+    Hkrati lahko hrani le eno od teg vrednosti. V danem
+    trenuntku se uporablja samo en član unije.
+    
 
 
     
