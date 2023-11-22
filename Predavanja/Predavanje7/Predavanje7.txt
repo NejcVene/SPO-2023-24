@@ -84,6 +84,66 @@ Funkcija msgsnd:
     Potrebujemo <sys/ipc.h> za strukture.
     Strukturo je potrebno deklarirati.
 
+Funkcija msgrcv:
+    int msqrcv(int msqid (isti ID, ki ga vrne msgget),
+     void *ptr (kaže na msgsnd),
+     size_t nbytes (velikost bufferja mText; pri msqrvc),
+     long type,
+     int flag);
+    
+    Type je lahko:
+        • type == 0: dobimo prvo sporočilo v vrsti
+        • type > 0: dobimo prvo sporočilo v vrsti, katerega tip je
+          type
+        • type < 0: dobimo prvo sporočilo v vrsti, katerega tip je
+          najnižja vrednost, ki je manjša ali enaka absolutni vrednosti
+          type
+
+Kako odstranimo vrsto iz sistema?
+    Funkcija int msgctl(int msqid (ID, ki ga vrne msgget),
+                        int cmd (določa ukaz),
+                        struct msqid_ds *buf (uporablja samo za to, da se shrani v nek buffer, sicer tega ne rabimo
+                        in je lahko NULL pointer));
+    cmd je lahko:
+        - IPC_RMID -> odstrani sporočilno vrsto iz sistema
+        - IPC_STAT -> strukturo msqid_ds shrani v buffer
+        - še druge zadeve ... 
+
+Semafor:
+    Je štecec, ki se uporablja za dostop do nekega objekta (vira)
+    s strani dveh ali več procesov.
+    Da dobi vir, mora biti proces sposoben:
+        • testirati semafor
+        • če je vrednost semaforja pozitivna, lahko uporabi vir. Proces
+          dekrementira semafor.
+        • če je vrednost semaforja 0, proces čaka, dokler ni vrednost večja od 0.
+          Ko se zbudi, gre v točko 1.
+    Semaforji so narejeni v jedru, zato, da so atomični (nedeljiva operacija).
+
+    Enostaven semafor je binarni -> nadzoruje samo en vir.
+
+    Za vsak semafor pa imamo strukturo sem:
+        struct sem {
+            unsigned short semval; // vrednost semaforja
+            pid_t sempid; // pid za zadnjo operacijo
+            unsigned short semncnt; // # procesov, ki čakajo na
+                                        // povečanje vrednosti
+            unsigned short semzcnt; // # procesov, ki čakajo na 0
+        };
+
+Funkcija semget:
+    Množico semamaforjev ustavrimo s semget.
+    int semget(key_t key (dobimo s ftok() ali izmislimo),
+               int nsems (koliko semaforjev; npr. 1),
+               int flag);
+    Vrne ID semaforja, če je vse OK, sicer -1 ob napaki.
+
+Funkcija semctl:
+    Izvaja razne opercije nad semaforjem.
+
+
+    
+
 
 
     
