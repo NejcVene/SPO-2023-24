@@ -1,0 +1,89 @@
+Funkciji popen in pclose:
+    popen(ukaz za izvedit, read/write):
+    type je dve možnosti:
+        - read (start bere od otroka) -> "r"
+        - write (starš piše) -> "w"
+        naredit pipe, fork, duplicira deskriptor
+    pclose():
+        zapiranje cevi
+
+FIFO:
+    Tudi named pipe (poimenovana cev). Ustreza ji neka datoteka, ki se obnaša
+    kot ta cev (ta datoteka predstavlja to cev).
+    Prednosti pred cevi:
+        - ni potrebno sorodstvo
+        - komunikacija deluje v obe smer
+    FIFO ustvarimo z mkfifo:
+        int mkfifo(const char *pathname (katera datoteka), mode_t mode (je enak kot pri funkciji open))
+        Vrne 0, če je vse OK, sicer -1.
+    Običajno je več pisalcev v FIFO.
+    Uporaba FIFO:
+        - lupinski ukazi, ki prenašajo podatke brez pisanja v začasne datoteke
+        - za aplikacije tipa odjemalec-strežnik.
+
+IPC System V:
+    Tudi "inter process communication" System V
+    To vsebuje:
+        - sporočilne vrste
+        - semarofje
+        - deljen pomnilnik
+    Ko ustvarimo IPC strukturo, moramo podati ključ (key). To si lahko sami izmislimo.
+    Lahko jo pa tudi generiramo s nekim programom.
+    Oba procesa se morata skicevati na isto strukturo. Načinov je več:
+        - nova IPC struktura se vedno ustvari, če je ključ naveden kot
+          če je IPC_PRIVATE.
+        - procesa se dogovorita za nek poseben ključ
+        - procesa se dogovorita za neko ime poti (pathname) in za nek
+          integer, funkcija ftok pa iz tega tvori ključ.
+    IPC_CREATE -> če struktura še ne obstaja jo ustvari.
+    IPC_PRIVATE je poseben ključ, ki vedno ustvari novo
+    strukturo.
+    Če si izberemo pojuben (še neuporabljen) ključ, je treba
+    pri ustvarjanju strukture postaviti zastavico IPC_CREAT,
+    ki strukturo ustvari, če še ne obstaja.
+
+    Strukutra za dostopna dovoljenja:
+    
+
+Sporočilna vrsta:
+    Je povezan seznam (linked list).
+    el -> el -> el
+    Je shranjen v jedru.
+    Ima struktura, ki se nanaša nato, vendar je ne uporabljamo neposredno.
+
+Funkcija msgget:
+    Ta funkcija ustvari ali odpre obstoječo sporočilno vrsto.
+    Podamo ključ.
+    int msgget(key (lahko ga generiramo (uporabi ftok), ali izmislimo), flag)
+    Vrne ID sporočilne vrste ali -1 ob napaki.
+    Nahaja se v <sys/msg.h>
+
+Funkcija msgsnd:
+    Da pošljemo podatke v vrsto, uporabimo to funkcijo.
+    int msgsnd(msqid (tist ID, ki ga vrne msgget),
+               const void *ptr (kazalec na buffer).
+               size_t nbytes (koliko bajtov),
+               int flag)
+    Vrne 0, sicer -1 ob napaki.
+    Sporočilo sestavlja:
+        - polje
+        - dolžino
+        - podatkovni bajti
+    Sporočilo se vedno da na konec vrste.
+    Ptr je kazalec na strukturo, ki vsebuje tip in podakte:
+        struct mymesg {
+            long mtype;
+            char mtext[512]; /* podatki dolžine nbytes */
+    }
+    Navedemo tip, da se lahko sporočila ločijo med sabo.
+
+    Flag je lahko 0 (če je 0 potem msgsnd blokira npr. če ni prostora za sproročila ali je vrsta bila
+    odstranjena iz sistema ...) ali IPC_NOWAIT (če je to nastavljeno npr. če je vrsta polna potem povzroči, da msgnsd vrne
+    takoj z napako EAGAIN).
+
+    Potrebujemo <sys/ipc.h> za strukture.
+    Strukturo je potrebno deklarirati.
+
+
+
+    
