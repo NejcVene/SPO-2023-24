@@ -31,10 +31,11 @@ int main(void) {
 
 void handlerSIGINT(int sigNum) {
 
-    // print how much seconds where left and set timer to 5
+    // print how much seconds where left and set timer to it
     printf("Prejel sem signal %d\n", sigNum);
-    printf("unslept_time = %d\n", alarm(0));
-    alarm(5);
+    int unsleptTime = alarm(0);
+    printf("unslept_time = %d\n", unsleptTime);
+    alarm(unsleptTime);
     pause();
 
 }
@@ -48,7 +49,7 @@ void handlerSIGALRM(int sigNum) {
             set_sig(SIGINT, SIG_IGN)
             setTime = 10;
             alarm(5);
-            printf("Alarm v casu t = 5 ...\nIgnoriral signal SIGINT\n");
+            printf("Alarm v casu t = 5 ...\nIgnoriram signal SIGINT\n");
             break;
         case 10: // 10 seconds pass -> default action for SIGNINT
             set_sig(SIGINT, SIG_DFL)

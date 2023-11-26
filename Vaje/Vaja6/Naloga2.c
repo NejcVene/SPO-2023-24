@@ -38,9 +38,11 @@ int main(void) {
         pidGrandchild = -1;
         // increment and chekc if count is even or odd
         if ((++count) % 2 == 0) {
+            printf("Using: Strtok\n");
             // if it is even, then user strtok
             numberOfArgs = strtokParse(inputBuffer, " ", parsedCommand);
         } else {
+            printf("Using: Parse\n");
             // if it is odd, then use custom parse
             numberOfArgs = parse(inputBuffer, parsedCommand);
         }
@@ -96,7 +98,7 @@ int main(void) {
             if (pidGrandchild == 0) {
                 // close write
                 close(pfd[1]);
-                // dupe read to stdint
+                // dupe read to stdin
                 dup2(pfd[0], STDIN_FILENO);
                 // close read as it is not needed anymore
                 close(pfd[0]);
