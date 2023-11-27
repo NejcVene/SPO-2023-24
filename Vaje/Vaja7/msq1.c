@@ -9,7 +9,6 @@
 #define MSG_SIZE 16 * 1000 // 16KB (max size to read from file)
 #define err(msg, reason) { fprintf(stderr, "Error: %s %s\n", msg, reason); exit(1); }
 
-
 struct myMsg {
     long mType;
     char mText[MSG_SIZE];
@@ -30,9 +29,9 @@ int main(int argc, char **argv) {
 
     printf("Using file: %s\n", argv[1]);
 
+    // set type and reaf file contents into buffer
     buffer.mType = 1;
     readFile(argv[1], &buffer);
-    // strcpy(buffer.mText, "ena dva tri, tole je številka štiri   pa      trije   ne štirje tabi vmes       mjav 5    in  še          šest");
 
     // generate a key
     if ((key = ftok("/home", 'a')) < 0) {
@@ -55,6 +54,7 @@ int main(int argc, char **argv) {
 
 }
 
+// read from file
 void readFile(char *fileName, struct myMsg *buffer) {
     
     int fd, n;

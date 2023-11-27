@@ -37,6 +37,7 @@ int main(void) {
         err("Could not receive msg", "msgrcv")
     }
 
+    // count the number of words that are in the msg.
     printf("Counting words for: %s\n", buffer.mText);
     countWords(buffer.mText);
 
@@ -44,9 +45,10 @@ int main(void) {
 
 }
 
+// count number of words in the buffer
 void countWords(char *buffer) {
 
-    int i, isEmtpy = 0, count = 0;
+    int i, isLetter = 0, count = 0;
     while (buffer[i] != '\0') {
         switch (buffer[i]) {
             case '\t':
@@ -54,12 +56,12 @@ void countWords(char *buffer) {
             case '\n':
             case '\r':
             case '\0':
-                isEmtpy = 0;
+                isLetter = 0;
                 break;
             default:
-                if (isEmtpy == 0) {
+                if (isLetter == 0) {
                     count++;
-                    isEmtpy = 1;
+                    isLetter = 1;
                 }
                 break;
         }
