@@ -52,3 +52,49 @@ Niti
         Nit - thread (of execution)
         Včasih so imeli proizvajalci različne verzije niti, nato so pa nastli
         standardi npr. pthreads (POSIX threads)
+
+Razlika med procesi in niti
+    Proces je program, ki se izvaja. Ustvari ga OS. Proces vključuje ne kup reči
+    npr. id, direktorij, ukazi programa, skalad, dispozicije signalov, knjižnice, orodja ...
+    Veliko je režije.
+    Nit je veliko lažja (ima manj režije). Je najmanjše zaporednje ukazov, ki se ga da neodvisno izvajat.
+    Proces ima lahko eno ali več niti. V osnovi je samo ena, lahko jih pa naredimo več.
+    Nit obstaja znotraj procesa in uporablja njegove vire.
+    Nit se konča takrat, ko se konča start, sicer se lahko konča tudi prej.
+    Niti si deliju skupen pomn. prostor. Če se nekaj spremeni, potem druge niti tudi vidijo to spremembo.
+    Za nit moramo sami poskrbeti za sinhornizacijo.
+
+Ustvarjanje niti:
+    #include <pthread.h>
+    int ptherad_create(pthread_t *tidp (kazalec na nit; thread ID),
+                       const phtread_attr_t *attr (lastnosti niti; atributni objekt),
+                       void * (*start_routine) (void*) (to je kazalec na funkcijo; to funkcijo potem nit izvaja),
+                       void *arg (parametri));
+    Vrne 0, če je OK, sicer neke zastavice.
+    atributni objekt:
+        - če je to NULL bodo privzete vrednosti.
+    arg:
+        - če ni argumenta je to NULL
+        - sicer je lahko tipa npr. int, long ...
+
+Kako vemo, kdaj bo nit se šla izvajat in na katerem CPU?
+    To ne moremo ravno vedeti. Ne moremo dodeliti niti na specifična jedra.
+    Lokalne implementacije to omogočajo, vendar koda ni prenoslijva po sistemi.
+    V večini primerov nas pa to niti ne zanima, niti ni pomembno.
+
+Kako se nit konča?
+    Imamo več načinov:
+        - vrne iz svoje procedure
+        - lahko kliče funkcijo:
+            void ptherad_exit(vodi  *retval). Če main tole uporabi
+            proces obstaja, dokler se niti ne končajo.
+        - če se main konča, se končajo tudi niti.
+        - če ni kliče exit() se konča celoten proces (niti tipično tega ne smejo klicati oz. uporabljati)
+        - če ena od niti dobi signal, ki ima za privzeto akcijo, da proces konča, se konča celoten proces
+          in ne samo ena nit.
+
+Združevanje in ločevaje niti:
+    ptherad_join čaka na nit, da se konča in pridobi njen izhodni status.
+    Združevanje je način sinhronizacije med niti.
+    Tista nit, ki kliče join blokira, dokler se navedena nit ne konča.
+          
