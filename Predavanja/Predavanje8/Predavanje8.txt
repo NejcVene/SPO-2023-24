@@ -18,7 +18,7 @@ Funkcija shmget
     Vrne nam ID (shmID). Je int, ki pove število te vrste.
     Če nam vrne -1 je napaka.
 
-Funkcija shmctl:
+Funkcija shmctl
     int shmctl(int shmID (tisto kar shmget vrne),
                int cmd (ukaz, ki se bo izvedel),
                struct smdid_ds *buf (tega mi ne bomo uporabljali))
@@ -64,7 +64,7 @@ Razlika med procesi in niti
     Niti si deliju skupen pomn. prostor. Če se nekaj spremeni, potem druge niti tudi vidijo to spremembo.
     Za nit moramo sami poskrbeti za sinhornizacijo.
 
-Ustvarjanje niti:
+Ustvarjanje niti
     #include <pthread.h>
     int ptherad_create(pthread_t *tidp (kazalec na nit; thread ID),
                        const phtread_attr_t *attr (lastnosti niti; atributni objekt),
@@ -93,8 +93,36 @@ Kako se nit konča?
         - če ena od niti dobi signal, ki ima za privzeto akcijo, da proces konča, se konča celoten proces
           in ne samo ena nit.
 
-Združevanje in ločevaje niti:
+Združevanje in ločevaje niti
     ptherad_join čaka na nit, da se konča in pridobi njen izhodni status.
     Združevanje je način sinhronizacije med niti.
     Tista nit, ki kliče join blokira, dokler se navedena nit ne konča.
+
+Dostop do skupnega vira
+    Glavna nit (main):
+        - globalno spremenljivko poveča za 1 (vsako sekundo)
+    Nit:
+        - j = vrenost globalne spremenljivke
+        - jo zmanjša za 1
+        - čez 1 sekundo naredi globalna spremenljivka = j
+
+Mutex (ključavnica)
+    Varuje dostop do skupnega vira.
+    Če več niti poskuša zakleniti mutex, to naredi tista, ki ga prva
+    doseže, druge morajo potem čakati.
+    Tam kjer spreminjamo globalne spremenljivke se reče kritična sekcija.
+    Navaden lock blokira, trylock pa ne blokira.
+    Za mutexe mora skrbeti programer
+
+Ustvarjanje mutexa
+    Če ga naredimo statično, ni potrebno uporabiti init in destroy.
+    pthread_mutex_lock() zaklene mutex
+    pthread_mutex_unlock() odklene mutex
+    int pthread_mutex_t() ustavri mutex
+
+Računanje PI
+    S pomočjo metode Monte Carlo
+    A = 1/4 * pi + r^2
+
+
           
