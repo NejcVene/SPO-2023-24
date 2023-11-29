@@ -1,0 +1,54 @@
+Deljeni/skupni pomnilnik (shared memory)
+    To je vrsta hitre komunikacije (hitreje od sporočilne vste).
+    Težava je v sinhronizaciji, sploh med procesi.
+    V ta namen lahko uporabimo semafor, ključavnice (mutex) ...
+
+Funkcija shmget
+    #include <sys/ipc.h>
+    #include <sys/shm.h>
+    int shmget(key_t key (ftok ali ga izmislimo),
+               int size (velikost pomnilnika v bajtih),
+               int flag (zastavice))
+    Ustvari ta skupni pomnilnik.
+    Če imamo obstoječ segment (že obstaja), damo size na 0.
+    ^ zakaj bi še enkrat zasedel prostor, če že obstaja?
+    flag:
+        - dostopna dovoljenja npr. 0644
+        - IPC_CREAT
+    Vrne nam ID (shmID). Je int, ki pove število te vrste.
+    Če nam vrne -1 je napaka.
+
+Funkcija shmctl:
+    int shmctl(int shmID (tisto kar shmget vrne),
+               int cmd (ukaz, ki se bo izvedel),
+               struct smdid_ds *buf (tega mi ne bomo uporabljali))
+    cmd:
+        - IPC_RMID -> ne rabi kazalca na tisto strukturo in damo lahko NULL; odstrani segment
+
+Funkciji shmat in shmdt
+    Priklop na segment deljenega pomnilnika:
+        void *shmat(int shmID,
+              void *addr (na pomnilnik),
+              int flag (zastavice))
+        Če je vse vredu vrne kazalec na ta segment. Če je kej narobe
+        vrne NULL kazalec.
+        addr:
+            - ni mus da mi zberemo. Lahko napišemo kar 0 in bo jedro našel ustrezno lokacijo.
+            - more bit (void *) 0, da jedro vrne naslov
+        flag:
+            - SHM_RDONLY -> segmetn se priklopi le za branje, sicer je branje IN pisanje
+    Proces se odklopi s shmdt:
+        int shmdt(void *addr (naslov))
+        Vrne int, ki pove če je OK ali ne (-1).
+
+==========================================================================================================
+
+Niti
+    Kadar se le da, uporabimo niti, ker so bolj učinkovite.
+    Vendar to se ne da vedno npr. so že obstoječi programi, ni na istem sistemu ...
+    Večnitnost je način, ki imamo lahko znotraj enega procesa več niti.
+    Izkoristimo paralelizem.
+    Predenj se je večnitnost pojavila, so programi imeli le eno nit:
+        Nit - thread (of execution)
+        Včasih so imeli proizvajalci različne verzije niti, nato so pa nastli
+        standardi npr. pthreads (POSIX threads)
