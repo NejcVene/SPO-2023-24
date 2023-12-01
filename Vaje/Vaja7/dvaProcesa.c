@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
     }
 
     // main process waits for its children to finish
-    for (int i = 0; i < numberOfProc; ++i) {
+    for (int i = 0; i<numberOfProc; i++) {
         waitpid(-1, &status, 0); // wait for any child process to finish
     }
 
