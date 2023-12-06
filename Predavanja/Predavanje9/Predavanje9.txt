@@ -1,0 +1,64 @@
+Note to self
+    Tole pišem ko sem bolan, tko da najverjetneje ne bo najboljše
+    napisa.
+Uvod v omrežno programiranje in TCP
+    Odjemalec in strežnik.
+    Odjemalec se po potrebi povezuje na strežnik preko omrežja.
+    OS že imajo programe za takšno komunikacijo.
+    Uporabljamo vtičnice oz. sockete.
+
+    Odjemalec:              Strežnik:
+        socket()                socket()
+        connect()               bind()
+                                listen()
+                                accept() <- blokira, dokler ne dobi odgovoria
+
+    Zapiranje povzave naredimo s close()
+
+    Port oz. vrata je 16 bitna številka [0, 65535]. Nižje so za znane storitve,
+    večja so pa kratkotrajna.
+
+    Vtičniški par sestavlja IP naslov in vrata:
+        - 2 IP naslova (lokalni, oddaljen)
+        - 2 TCP vrata (lokalni, oddaljen)
+
+Ustvarjanje vtičnice
+    Uporabimo funkcijo socket.
+    #include <sys/socket.h>
+    int socket(int family (AF_INET (IPv4), AF_INET6 (IPv6)),
+               type (SOCK_STREAM; za TCP vtičnce),
+               protocol (0))
+    V našem primeru bomo vedno dali te vrednosti:
+        (AF_INET, SOCK_STREAM, 0)
+    Funkcija vrne socket fd, sicer -1, če je napaka.
+
+Vzpostavljanje povezave
+    Odjemalec uporabimo funkcijo connect
+    int connect(int sockfd (tist kar dobi od funkcije socket),
+                const struct sockaddr *servaddr (kazalec na strukturo),
+                socklen_t addrlen (to je velikost zgornje strukture))
+    Vrne 0, če je OK, sicer -1.
+    Ko se connect izvede se začne trojno rokovanje.
+    Struktura sockaddr:
+        Vsebuje PORT, IP addr, IP family
+        Vsebuje še eno strukturo. Ta struktura pa ima le en element, in sicer IP naslov (32 bit).
+
+Imamo tudi funkcije za spremembo vrstnega reda bajtov
+    - Little endian:
+        LSB
+        MSB
+    - Big endian:
+        MSB
+        LSB
+    - HBO
+    - NBO
+    - Internetni protokoli uporabljajo big endian (MSB se pošlje najprej).
+    - hton:
+        host to network (HBO; host byte order v NBO).
+        To uporablja tisti, ki pošilja po mreži.
+    - hton s/l
+        s -> short 16 bit
+        l -> long  32 bit
+    - ntoh
+        network byte order (NBO) to host byte order (HBO)
+        To uporabimo pri sprejemu.
