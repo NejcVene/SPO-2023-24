@@ -1,0 +1,56 @@
+EINTR
+    To je prekinjen sistemski klic. To tega pogosto
+    pride pri spletnih aplikacijah.
+    Kaj narediti, če pride to tega? Samo še enkrat poženi to.
+
+TIME_WAIT
+    Stanje, kjer strežnik čaka nekega odjemalca.
+    Čez nekaj časa se tudi ta samodejno zaključi.
+    (Ta stanje vidimo v diagramu prehajanja stanj za TCP).
+
+Ukaz ps -al nam pokaže stanje procesov npr. če je zombi proces bo izpsal Z.
+
+Bind error
+    To se lahko naredi pri zagonu strežnika.
+    Razlog za to je (običajno) ta, da je po končanju povezave strežnik še
+    nekaj časa v stanju TIME_WAIT.
+    To popravimo s funkcijo, ki nam omogoča da uporabimo enaka vrata.
+
+======================================================================================
+
+Gonilniki - Moduli
+    Model je ime za kodo, ki se v Linuxu izvaja in jo damo v jedro med izvajanjem.
+    To pomeni, da jedra ni potrebo re-compilat.
+
+Kaj je gonilnik:
+    Je program, ki upravlja s HW napravami preko dobro definiranega
+    programskega vmesnika. Torej je SW plast med aplikacijo in napravo.
+    Razvoj gonilinika je neodvisna od jedra (ni ga potrebno npr. ustaviti).
+
+Jedro
+    "Velik program"
+    Veliko število procesov.
+    Kernel je kos kode, ki ureja zadeve za procese (npr. vire)
+    Torej naloge so:
+        - kreiranje procesa
+        - upravlajnje s procesi
+        - upravlajnje s pomnilnikom
+        - datotečni sistemi
+        - nadzor nad napravami
+        - omrežje
+
+Moduli
+    Vsak modul je iz objektne kode (ni exe).
+    Da jih damo v kernel uporabimo insmod (insert modul).
+    rmmod pa ga odstrani iz jedra.
+    3-je tipi naprav in modulov:
+        - bločni
+          npr. USB
+        - omrežni
+          Naprava, ki je možna izmenjave podatkov z drugimi gostitelji.
+        - znakovni
+          Najenostavnejši
+          ttyS0 -> seriski port (kakor COM1 pri WIN).
+          Dostopne kot tok bajtov (kakor datoteka).
+          Dostop preko posebnih datoteka za znakovne naprave.
+          Večinoma je sekvenčni dostop do podatkov.
