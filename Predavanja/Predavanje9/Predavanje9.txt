@@ -84,3 +84,19 @@ Funkcija accept
 
 Odjemalec kliče close -> strežnik read dobi 0 (EOF)
 Strežnik kliče close -> odjemalec read dobi 0 (EOF)
+
+Ovojnice
+    Pomaga obdelovati razne reči npr. napake
+    To je wrapper. Če to uporabimo pride bolj
+    pregledna koda.
+
+Funkcija accept
+    Drugi in tretji arguments sta za odjemalca.
+    Iz tega lahko dobimo strukturo sockaddr in tako
+    dobimo podatke od odjemalca.
+
+Boljši strežnik od iterativnega je paralelni
+    Paralelni oz. vzporedni strežnik.
+    Naredimo s pomočjo fork-a
+    Torej za vsakega odjemalca je en otrok.
+    fork() -> otrok -> streže odjemalca
