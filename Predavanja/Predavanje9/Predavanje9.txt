@@ -62,3 +62,22 @@ Imamo tudi funkcije za spremembo vrstnega reda bajtov
     - ntoh
         network byte order (NBO) to host byte order (HBO)
         To uporabimo pri sprejemu.
+
+Funkcija bind:
+    Določi vtičnici lokalni protokolni naslov.
+    int bind(int sockfd,
+             const struct sockaddr *myaddr,
+             socklen_t addrlen (dolžina strukture))
+    Vrne 0, če je OK, sicer -1.
+
+Funkcija listen:
+    To funkcijo izvaja le strežnik in izvaja dve akciji
+
+Funkcija accept
+    To funkcijo uporabi le TCP strežnik, da sprejme naslednjo TCP
+    povezavo iz čakalne vrste.
+    int accpet(int socketfd,
+               struct sockaddr *cliaddr,
+               socklen_t *addrlen)
+    Vrne povezavi opisnik, ali -1 ob napaki.
+    cliaddr in addrlen lahko damo na NULL, če nas ne zanima kdo je odjemalec.
