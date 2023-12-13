@@ -54,3 +54,47 @@ Moduli
           Dostopne kot tok bajtov (kakor datoteka).
           Dostop preko posebnih datoteka za znakovne naprave.
           Večinoma je sekvenčni dostop do podatkov.
+
+Varnost
+    V jedro lahko nalaga module samo superuser.
+
+Ni fuknije main(), ampak je ena vhoda pa ena izhoda funkcija.
+Funkcije uporabljajo static s namenom, da so vidne samo znotraj
+modula.
+Makro module_init() -> kot paramenter podamo ime vhodne/init funkcije.
+Makro module_exit() -> kot paramenter podamo ime izhodne/končne funkcije.
+
+printk() namesto printf(), ker v kernelu ta ni dostopa (user knjižnic
+v kernelu NI).
+printk() izhod gre na log buffer jedra (var/log/messages). Tist kar bo
+izpisal lahko vidimo s ukazom dmesg.
+Moduli nimajo običajni header datotek.
+Če pride do segmentation fault je tukaj veliko bolj nevarna.
+Jedro ima majhen sklad (cca. 4KB)
+Nimamo aritmetike s plavajočo vejco.
+
+uname -r pove katero verzijo jedra imamo.
+
+Obravnava napak med init
+    Vsaka registracija lahko spodleti.
+    Ker je npr. premalo pomnilnika
+    Če se modul ne naloži, je treba preklicati vse opravljene registracije.
+
+Če mamo kake kazalce, dajmo te inicializirati s NULL (to je s namenom, da vemo, če obstaja).
+
+Parametri modula
+    So možni.
+
+Obstajajo tudi moduli, ki ne grejo v jedro. Ti so po navadi narejeni kot
+strežniki. Prednost tega je, da lahko uporabimo celotno C knjižnico,
+boljše debugganje, uporaba virtualnega pomnilnika.
+Slabost je, da v user-space ni preknitev, neposreden dostop do pomnilnika
+je lahko težave, context switch med procesi je bolj počasen.
+
+Znakovni gonilnik
+    4 komponete:
+        - aplikacija
+        - posebna datoteka naprave
+        - gonilnik
+        - naprava
+    
