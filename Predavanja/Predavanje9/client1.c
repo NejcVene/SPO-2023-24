@@ -42,10 +42,12 @@ int main(int argc, char **argv) {
         if (write(socketFD, buffer, strlen(buffer) + 1) != strlen(buffer) + 1) {
             err("write")
         }
-        while ((n = read(socketFD, buffer, BUFFER_SIZE)) > 0) {
-            buffer[n - 1] = 0; 
-            puts(buffer);
+        n = read(socketFD, buffer, BUFFER_SIZE);
+        if (n < 0) {
+            err("Error")
         }
+        buffer[n - 1] = 0; 
+        puts(buffer);
     }
     if (n < 0) {
         err("read")

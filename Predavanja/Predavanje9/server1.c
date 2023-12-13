@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); // določi naslov
     serverAddr.sin_port = htons(atoi(argv[1])); // določi port
 
+    // bind s vtičnico
     if (bind(listenFD, (const struct sockaddr *) &serverAddr, sizeof(serverAddr)) < 0) {
         err("bind")
     }
@@ -49,7 +50,7 @@ int main(int argc, char **argv) {
         if (connectFD < 0) {
             err("accept")
         }
-        while ((n = read(connectFD, buffer, BUFFER_SIZE)) < 0) {
+        while ((n = read(connectFD, buffer, BUFFER_SIZE)) > 0) {
             printf("Dobil sem: %s\n", buffer);
             // tukaj bi lahko bila neka vrste obdelave, ampak mi samo isto nazaj pošljemo
             if (write(connectFD, buffer, strlen(buffer) + 1) != strlen(buffer) + 1) {

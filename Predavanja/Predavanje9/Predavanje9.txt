@@ -81,3 +81,6 @@ Funkcija accept
                socklen_t *addrlen)
     Vrne povezavi opisnik, ali -1 ob napaki.
     cliaddr in addrlen lahko damo na NULL, če nas ne zanima kdo je odjemalec.
+
+Odjemalec kliče close -> strežnik read dobi 0 (EOF)
+Strežnik kliče close -> odjemalec read dobi 0 (EOF)
