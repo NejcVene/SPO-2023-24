@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
         // read what server sends back
         readBytes = read(socketFD, buffer, BUFFER_SIZE);
         if (readBytes < 0) {
-            err("Error", "err")
+            err("Could not receive from server", "read")
         }
         // print result
         buffer[readBytes - 1] = 0; 

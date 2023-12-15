@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
 
     int listenFD, connectedFD, readBytes;
     struct sockaddr_in serverAddr;
-    char buffer[30],
+    char buffer[100],
          cmdResult[BUFFER_SIZE], 
          toClient[BUFFER_SIZE],
          command[BUFFER_SIZE];
@@ -52,7 +52,10 @@ int main(int argc, char **argv) {
             err("Could not accept conection", "accept")
         }
         // get/read whatever client sends to us
-        while ((readBytes = read(connectedFD, buffer, 30)) > 0) {
+        while ((readBytes = read(connectedFD, buffer, 100)) > 0) {
+            if (strcmp(buffer, " ") == 0) {
+                continue;
+            }
             // get rid of new line char. (\n)
             buffer[strlen(buffer) - 1] = 0;
             // add user input to command string
@@ -62,7 +65,7 @@ int main(int argc, char **argv) {
             // run command (make pipe, fork, exec, wait)
             FILE *runCommand = popen(command, "r");
             if (!runCommand) {
-                err("Coild not run command", "popen")
+                err("Could not run command", "popen")
             }
 
             // get command result and append it sending buffer
@@ -88,7 +91,7 @@ int main(int argc, char **argv) {
 
             // send result to client
             if (write(connectedFD, toClient, strlen(toClient) + 1) != strlen(toClient) + 1) {
-                err("write", "write")
+                err("Could not send to client", "write")
             }
 
             // clear sending buffer by writing 0 to it
