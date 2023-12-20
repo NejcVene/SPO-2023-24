@@ -88,4 +88,32 @@ s_pos = *f_pos / Q;
 Alokacija pomn.
     Uporabi kmalloc
 
+Q = 10
+Npr. vpišemo 26 bajtov iz uporabniškega prostora
+s_pos = *f_pos / Q; // 0 / 10 = 0 (kateri kvant)
+q_pos = *f_pos % Q; // 0 % 10 = 0 (kje v kvantu smo)
+
+if (count > Q - q_pos) { // 0 > 10 - 0
+    count = Q - q_pos // 10 - 0 = 0
+}
+
+f_pos += count; // count = 10, offset = 10 (f_pos)
+size = f_pos // 10
+
+
+s_Pos = 10 / 10 = 1 (drugi kvant)
+f_pos = 10 % 10 = 0 (začetek drugega kvanta)
+
+count > Q - q_pos // 10 > 10 - 0
+    count = 10
+copy_from_user(data[s_pos(1)] + q_pos(0))
+
+f_pos = 2
+q_pos = 0
+copy_from_user(data[s_Pos(2)], 6)
+
+Funkcija open
+    Izvede vso potrebno inicializacijo.
+    
+
 

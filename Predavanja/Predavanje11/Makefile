@@ -1,1 +1,1 @@
-obj-m := ogrodje.o
+obj-m := sc1.o
