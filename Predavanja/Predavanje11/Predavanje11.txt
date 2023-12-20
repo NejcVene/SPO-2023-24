@@ -1,0 +1,68 @@
+Glavna in pomožna števila
+    Številka zakodirana v dev_t (32 bit vrednost). Glavno število (major)
+    je 12 bitov, pomižno (minor) pa 20 bitov. Obe sta sicer v isti vrednosti.
+    Da dobimo te dve števili lahko uporabimo makroje:
+        - MAJOR(dev_t)
+        - MINOR(dev_t)
+        - MKDEV(major, minor) => pa vrne 32 bitno število (men se zdi, da jih
+          nazaj skupaj sestavi).
+
+Ustvarjanje posebne datoteke
+    Uporabimo ukaz mknod -m 666 /dev/naprava maj min
+    To naredi nek "placeholder"
+
+Pomembne podatkovne strukture
+    3 pomembne podatkovne strukture jedra:
+        - file_operations -> struktura, ki vsebuje kazalce na operacije gonilnika
+          Implementirajo sistemske klice.
+          Ta struktura je definirana v <linux/fs.h>
+          *owner   -> ni operacija, ampak kazalec na strukturo module
+          *llsek   -> sprememba pozicije v datoteki
+          *read    -> branje podatkov s naprave
+          *write   -> pošiljanje podatkov napravi (vrne število uspešno zapisanih bajtov)
+          *ioctl   ->
+          *open    -> to je prva operacija na datoteki naprave (z izjemo init funckije). To lahko
+                      kej naredi, ali ne.
+          *release -> to je zadnja operacija (z izjemo čistilne (exit) funckije)
+        - file -> definiran v <linux/fs.h>.
+          Nima nič skupnega s FILE
+          Predstavlja odprto datoteko; ustvari se v jedru ob sis. klicu open.
+          Kazalec na to strukturo se običajno imenuje filp
+          f_mode        ->
+          f_pos         -> trenutna pozicija
+          f_flags       -> zastavice
+          *f_op         -> kazalec na strukturo file_operations
+          *private_data -> lahko se uporabi za shranjevanje informacij. če je to potrebno.
+        - inode -> to strukturo uporablja jedro
+
+Registracija znakovnih naprav
+    2 načina:
+        - starejši (uporabili bomo tega, ker je enostavnejši)
+        - novejši (uprava cdev)
+    Kako to naredimo:
+        int register_chrdev(
+            major (pametno je tukaj dati 0, ker potem jo jedro sam izbere), 
+            name (ime naprave), 
+            *fops (kazalec na strukturo file_operations))
+        Funkcija vrne major vrednost, če ma kot parameter major vrednost 0, ker imamo dinamično alokacijo.
+
+        int unregister_chrdev()
+
+Funkiji read in write
+    ssize_t read(struct file *filp,
+                 char __user *buffer (buffer v user space; iz tukaj doimo podatke),
+                 size_t count (koliko podatkov se prenese),
+                 loff_t *offp (offset)
+                )
+    ssize_t write(struct file *filp,
+
+                 )
+    
+    copy_to_user se uporabi pri read()
+    copy_from_user pa uporabi write()
+    Ti dve funkciji tudi preverita, če je kazlec veljaven
+
+Tagged structure
+    Primer kako inicializiraš stukturo. Je del C99
+    npr. struct abc {.a = 1, .b = "neki" .c = 69}
+
