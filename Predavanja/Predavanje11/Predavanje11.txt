@@ -66,3 +66,26 @@ Tagged structure
     Primer kako inicializiraš stukturo. Je del C99
     npr. struct abc {.a = 1, .b = "neki" .c = 69}
 
+sc1 je modul, ki kvantizirano vpisuje vsebino v pomn. jedra (in izpiše, če zahtevano).
+Q = velikost kvatna (kos, ki ga pišemo v pomn)
+S = velikost množice kvantom (kvantne množice)
+Dinamična alokacija matrike
+    data = kmalloc(S * sizeof(char *), GFP_KERNEL);
+    if (!data) {
+        err
+    }
+    for (i = 0; i<S; i++) {
+        if (!data[i]) {
+            data[i] = kmalloc(Q * sizeof(char), GFP_KERNEL);
+        }
+        if (!data[i]) {
+            err
+        }
+    }
+
+s_pos = *f_pos / Q;
+
+Alokacija pomn.
+    Uporabi kmalloc
+
+
