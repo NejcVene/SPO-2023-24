@@ -84,6 +84,8 @@ int main(int argc, char **argv) {
 
 }
 
+// send this signal to parent when child process ends
+// using waitpid with WNOHANG captures more children
 void sigchldHander(int sigNum) {
 
     pid_t pid;
