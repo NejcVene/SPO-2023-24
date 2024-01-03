@@ -8,43 +8,44 @@
 
 MODULE_LICENSE("GPL");
 
+struct mem0_dev {
+	char *buffer;
+	size_t bufferSize;
+};
+
 int start_module(void);
 void end_module(void);
 int open(struct inode *, struct file *);
 int release(struct inode *, struct file *);
 ssize_t read(struct file *filp, char __user *buff, size_t len, loff_t *offset);
 ssize_t write(struct file *filp, const char __user *buff, size_t len, loff_t *offset);
-ssize_t write2(struct file *filp, const char __user *buff, size_t len, loff_t *offset);
+void mem0_clenup(struct mem0_dev *);
 
-int Major;
+module_init(start_module);
+module_exit(end_module);
+
 struct file_operations fops = {
 	.open = open,
 	.release = release,
 	.read = read,
-	.write = write2
+	.write = write
 };
 
-struct mem0_dev {
-	char *buffer;
-	size_t bufferSize;
-};
-
+int Major;
 struct mem0_dev *mem0Dev;
-
-module_init(start_module);
-module_exit(end_module);
 
 int start_module(void) {
 
 	Major = register_chrdev(0, DEVICE_NAME, &fops);
 	if (Major < 0) {
-		printk(KERN_ALERT "Registracija znakovne naprave spodletela.\n");
+		printk(KERN_ALERT "Start: device could not be registered\n");
 		return Major;
 	}
-	printk(KERN_INFO "Glavno stevilo je %d.\n", Major);
+	printk(KERN_INFO "Start: major is: %d.\n", Major);
 
 	mem0Dev = kmalloc(sizeof(struct mem0_dev), GFP_KERNEL);
 	if (!mem0Dev) {
+		printk(KERN_ALERT "Start: uld not allocate memory\n");
 		return -ENOMEM;
 	}
 	memset(mem0Dev, 0, sizeof(struct mem0_dev));
@@ -55,9 +56,7 @@ int start_module(void) {
 
 void end_module(void) {
 
-	kfree(mem0Dev->buffer);
-	kfree(mem0Dev);
-	unregister_chrdev(Major, DEVICE_NAME);
+	mem0_clenup(mem0Dev);
 
 }
 
@@ -86,33 +85,13 @@ ssize_t read(struct file *filp, char __user *buff, size_t len, loff_t *offset) {
 	}
 
 	if (copy_to_user(buff, mem0Dev->buffer, len) ) {
+		mem0_clenup(mem0Dev);
 		return -EFAULT;
 	}
 
 	*offset += len; // move offset for len (where data is gonna be read next time)
 
-	return len;
-
-}
-
-ssize_t write2(struct file *filp, const char __user *buff, size_t len, loff_t *offset) {
-
-	char *tmpBuffer = kmalloc(len, GFP_KERNEL);
-	if (!tmpBuffer) {
-		return -ENOMEM;
-	}
-
-	if (copy_from_user(tmpBuffer, buff, len)) {
-		kfree(tmpBuffer);
-		return -EFAULT;
-	}
-
-	mem0Dev->buffer = tmpBuffer;
-	mem0Dev->bufferSize = len;
-	kfree(tmpBuffer);
-	*offset += len;
-
-	printk("Data read: %s of size: %ld\n", mem0Dev->data, mem0Dev->bufferSize);
+	printk("Data read: \'%s\' of size: %ld\n", mem0Dev->buffer, mem0Dev->bufferSize);
 
 	return len;
 
@@ -120,23 +99,34 @@ ssize_t write2(struct file *filp, const char __user *buff, size_t len, loff_t *o
 
 ssize_t write(struct file *filp, const char __user *buff, size_t len, loff_t *offset) {
 
-	if (!mem0Dev) {
-		return -ENOMEM;
-	}
-
-	mem0Dev->data = kmalloc(len, GFP_KERNEL);
-	if (!mem0Dev->data) {
-		return -ENOMEM;
-	}
-
-	if (copy_from_user(mem0Dev->data, buff, len)) {
+	mem0Dev->buffer = kmalloc(len, GFP_KERNEL);
+	if (!mem0Dev->buffer) {
+		printk(KERN_ALERT "Write: could not allocate memory\n");
+		mem0_clenup(mem0Dev);
 		return -ENOMEM;
 	}
 	mem0Dev->bufferSize = len;
+
+	if (copy_from_user(mem0Dev->buffer, buff, len)) {
+		mem0_clenup(mem0Dev);
+		return -EFAULT;
+	}
+
 	*offset += len;
 
-	printk("Data read: %s of size: %ld\n", mem0Dev->data, mem0Dev->bufferSize);
+	printk("Data write: \'%s\' of size: %ld\n", mem0Dev->buffer, mem0Dev->bufferSize);
 
-	return 0;
+	return len;
+
+}
+
+void mem0_clenup(struct mem0_dev * mem0Dev) {
+
+	if (mem0Dev) {
+		kfree(mem0Dev->buffer);
+	}
+
+	kfree(mem0Dev);
+	unregister_chrdev(Major, DEVICE_NAME);
 
 }
