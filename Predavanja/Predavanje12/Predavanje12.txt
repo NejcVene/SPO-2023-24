@@ -293,3 +293,19 @@ Dostopanje do V/I pomnilnika
         void memcpy_toio(void *dest,
         void *source,
         unsigned int count);
+
+Raspberry Pi
+    Naslovi registrov GPIO
+        GPFSELn -> GPIO function select za n.
+            000 -> input
+            001 -> output
+        GPIO Pin Output Set Registers (GPSETn) (za nastavljanje izhodov)
+            GPSET0: (odmik 1C) 31-0 0 - no effect, 1 - set pin n
+            GPSET1: (odmik 20) 21-0 0 - no effect, 1 - set pin n
+        GPIO Pin Output Clear Registers (GPCLRn) (za brisanje izhodov)
+            GPCLR0: (odmik 28) 31-0 0 no effect, 1 - clear pin n
+            GPCLR1: (odmik 2C) 21-0 0 no effect, 1 - clear pin n (53-32)
+        GPIO Pin Level Registers (GPLEVn) (za branje vhodov)
+            GPLEV0: (odmik 34) 31-0 0 pin n is low, 1 pin n is high
+            GPLEV1: (odmik 38) 21-0 0 pin n is low, 1 pin n is high (53-32)
+
