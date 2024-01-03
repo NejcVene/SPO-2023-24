@@ -2,3 +2,9 @@
 ###################
 *.o
 *.so
+
+# Module stuff #
+################
+*.mod
+*.order
+*.symvers
