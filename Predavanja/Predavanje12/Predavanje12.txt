@@ -35,9 +35,185 @@ Zakasnitve
               Najenostavnješa rešitev -> zanka, ki preverja števec jiffies
               jiffies je deklariran kot volatile (pomembno!)
               Problem tukaj je, da če jedro ni konigurirano za prekinjevalno
-              razvrščanje (te zanke sploh je moremo prekiniti) ali 
+              razvrščanje (te zanke sploh je moremo prekiniti) ali so lahko časi zakasnitev
+              bistveno večji, če je sistem zelo zaseden.
+            - Prepuščanje
+              podobno, le da CPE ne dela
+              proces prepusti svojo časovno rezino drugim procesom,
+              vendar ostane v vrsti (če drugih ni, se stvar ponavlja v
+              ciklu)
+
+              while ( jiffies < j1 ) {
+                schedule();
+              }
+
+              enako slabo kot prej, le CPE je manj zaposlena
+            - Timeout
+              je boljša varianta
+              čaka tako, da spi v čakalni vrsti
+
+              #include <linux/wait.h>
+              long wait_event_timeout( wait_queue_head_t q,
+              condition,
+              long timeout);
+              long wait_event_interruptible_timeout(
+              wait_queue_head_t q,
+              condition,
+              long timeout);
+        - Kratke zakasnitve
+            - Na osnovi zaposlenega čakanja (Jedro izračuna, koliko ponovitev neke
+              zanke je potrebno izvesti):
+              #include <linux/delay.h>
+              void ndelay(unsigned long nsecs);
+              void udelay(unsigned long usecs);
+              void mdelay(unsigned long msecs);
+            - Brez zaposlenega čakanja
+              #include <linux/delay.h>
+              void msleep(unsigned int millisecs);
+              unsigned long msleep_interruptible(unsigned int millisecs);
+              (to spanje je možno prekiniti s signalom)
+
+
+
+Jedrni časovniki
+    Uporaba: kadar želimo prožiti neko akcijo čez določen čas,
+    ne želimo pa blokirati procesa.
+    Ti časovniki niso pretirano natančni.
+        • obstajajo tudi High-resolution timers (hrtimers), ki delujejo na ločljivosti ns.
+    
+    Jedrni časovnik (Kernel timer) je podatkovna struktura, ki
+    nalaga jedru, da po določenem času izvede neko funkcijo
+    • ta funkcija se izvaja asinhrono: originalni proces lahko tudi spi ali pa se celo
+      ne izvaja več
+    • deluje na principu SW prekinitve
+    • Implementacija v <linux/timer.h>, <kernel/timer.c>
+    • Jedrni časovniki delujejo v prekinitvenem načinu
+    • torej izven konteksta procesa, zato ni dostopa do uporabniškega
+      prostora, pa tudi spanje ali čakanje ni dovoljeno
+
+    Funkcija timer_setup inicializira časovnik, določi callback
+    in kontekst:
+        void timer_setup( struct timer_list *timer,
+        void (*function)(struct timer_list *timer),
+        unsigned long data);
+
+    Funkcija add_timer požene časnovnik:
+        void add_timer(struct timer_list *timer);
+
+    Funkcija mod_timer posodobi čas, ko bo časovnik potekel:
+        int mod_timer(struct timer_list *timer,
+        unsigned long expires);
+
+        o Implementirana pa je tako, da kliče add_timer():
+            del_timer(timer);
+            timer->expires = expires;
+            add_timer(timer);
+            Tako lahko shajamo tudi brez funkcije add_timer()
+
+    Funkcija del_timer izbriše časovnik, še predenj poteče:
+        int del_timer(struct timer_list *timer);
+
 
 1. make -C /usr/src/linux-headers-$(uname -r) M=$(pwd) modules
 2. sudo insmod ime_modula.ko
 3. dmesg
 4. sudo rmmod ime_modula
+
+===================================================================================
+
+Gonilniki - Komunikacija s strojno opremo
+
+Večina naprav je zankovnih (izjema so naprave za shranjevanje in
+omrežni vmesniki). Vsaka uporbniška aplikacija, ki uporablja tako
+napravo, uporablja znakovni pomnilnik preko znakovne posebne datoteke.
+
+V/I vrata
+    Klasične V/I napravo krmilimo s pisanjem in branjem njihovih registrov.
+    Registre vidimo v V/I prostoru ali pomnilniškem (to so neki naslovi, do
+    katerih imamamo dostop).
+    V/I vrata -> npr. serijski port. Tišično 1 bajt. Vsak port ima svoj naslov
+                 npr. 0x3F8.
+    V/I pomnilnik -> posamezna naprava lako uporablja del pomnilnika, kjer so 
+                     neki podatki.
+    Na HW nivoju ni neke konceptualne razlike med pomn. področjem in V/I
+    področjem.
+
+Naslovni prostor
+    Imamo dva tipa:
+        - Enotni nasl. prostor oz. pomn. preslikan V/I (Memory mapped I/O)
+          Na vhodno napravo pišemo tako, kot da bi pisali v pomn.
+          Iz naprave beremo tako, kot da bi brali iz pomn.
+          Bolj učinkovito.
+        - V/I nasl. prostor (ločne od glavnega pomn)
+          Tukaj potrebujemo posebne ukaze, ker isti ukazi, ki delajo s pomn.
+          tukaj ne delajo.
+          Večina perifernih napraj je prilagojena PC-jem (x86)
+    Linux uporablja ta drugo opcijo.
+
+V/I registri in običajni pomn.
+    Kjub temu, da sta si dost podobna, nam težavo tukaj dela
+    optimizacija CPE ali prevajalnika:
+        1. Uporaba predpomn.
+        2. Sprememba vrstega reda operacij.
+    Poskrbeti moramo, da pri dostopu do registrov ni predpomnenja in sprememba
+    vrtega reda operacij.
+
+Pomn. pregrada
+    • rmb (read memory barrier) zagotavlja, da so vsa branja, ki so pred pregrado, tudi
+        izvedena takrat:
+        #include <asm/system.h>
+        void rmb(void);
+    • wmb (write memory barrier) zagotavlja , da so vsa pisanja, ki so pred pregrado, tudi
+        izvedena takrat:
+        #include <asm/system.h>
+        void wmb(void);
+    • mb (memory barrier) pa zagotavlja , da so vsi dostopi, ki so pred pregrado, tudi
+        izvedeni takrat:
+        #include <asm/system.h>
+        void mb(void);
+    • Makro barrier pa ni hardverski, ampak softverski (preprečuje prevajalniku, da bi
+      bil 'pameten'):
+        #include <linux/kernel.h>
+        void barrier(void);
+
+V/I vrata
+    Alokacija V/I vrat (‘I/O port’):
+        #include <linux/ioport.h>
+
+        struct resource *request_region(
+            unsigned long first,
+            unsigned long n,
+            const char *name );
+
+        Region, ker lahko dobimo več vrat.
+        • Ta funkcija pove jedru, da želimo uporabiti n vrat, začenši
+          s first
+        • name je ime naprave
+        • če ne uspe, vrne NULL
+        • vse alokacije vrat se kažejo v /proc/ioports
+        • če nam alokacija ne uspe, tam lahko vidimo, kdo nas je prehitel
+
+    Sprostitev vrat
+        void release_region( unsigned long start,
+        unsigned long n);
+
+    int check_region( unsigned long first,
+    unsigned long n); omogoča preverjanje, ali je pordočje vrat na voljo, vendar
+    se uporaba tega odsvetuje, ker ni atomska operacija.
+    Bolje je uporabiti request_region, ki je atomska.
+
+Upravljanje z V/I vrati
+    • Branje in pisanje 8-bitnih vrat:
+        unsigned inb(unsigned port);
+        void outb(unsigned char byte, unsigned port);
+    • Branje in pisanje 16-bitnih vrat:
+        unsigned inw(unsigned port);
+        void outw(unsigned short word, unsigned port);
+    • Branje in pisanje 32-bitnih vrat:
+        unsigned inl(unsigned port);
+        void outl(unsigned longword, unsigned port);
+
+Uporaba bitnih operacij
+
+V/I pomnilnik
+
