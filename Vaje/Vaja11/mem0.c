@@ -14,17 +14,18 @@ int open(struct inode *, struct file *);
 int release(struct inode *, struct file *);
 ssize_t read(struct file *filp, char __user *buff, size_t len, loff_t *offset);
 ssize_t write(struct file *filp, const char __user *buff, size_t len, loff_t *offset);
+ssize_t write2(struct file *filp, const char __user *buff, size_t len, loff_t *offset);
 
 int Major;
 struct file_operations fops = {
 	.open = open,
 	.release = release,
 	.read = read,
-	.write = write
+	.write = write2
 };
 
 struct mem0_dev {
-	char *data;
+	char *buffer;
 	size_t bufferSize;
 };
 
@@ -72,18 +73,44 @@ int release(struct inode *inode, struct file *file) {
 
 ssize_t read(struct file *filp, char __user *buff, size_t len, loff_t *offset) {
 
-	char *msg = "Zivjo!\n";
-	int size = strlen(msg);
-	if ( *offset >= size) // all was read
+	size_t size = mem0Dev->bufferSize;
+
+	if (*offset >= size) { // all was read
 		return 0;
+	}
 
-	if ( len > size - *offset)
+	if (len > size - *offset) {
 		len = size - *offset; // how big a buffer is needed
+	}
 
-	if ( copy_to_user( buff, msg, len) )
+	if (copy_to_user(buff, mem0Dev->buffer, len) ) {
 		return -EFAULT;
+	}
 
 	*offset += len; // move offset for len (where data is gonna be read next time)
+
+	return len;
+
+}
+
+ssize_t write2(struct file *filp, const char __user *buff, size_t len, loff_t *offset) {
+
+	char *tmpBuffer = kmalloc(len, GFP_KERNEL);
+	if (!tmpBuffer) {
+		return -ENOMEM;
+	}
+
+	if (copy_from_user(tmpBuffer, buff, len)) {
+		kfree(tmpBuffer);
+		return -EFAULT;
+	}
+
+	mem0Dev->buffer = tmpBuffer;
+	mem0Dev->bufferSize = len;
+	kfree(tmpBuffer);
+	*offset += len;
+
+	printk("Data read: %s of size: %ld\n", mem0Dev->data, mem0Dev->bufferSize);
 
 	return len;
 
@@ -106,7 +133,7 @@ ssize_t write(struct file *filp, const char __user *buff, size_t len, loff_t *of
 	mem0Dev->bufferSize = len;
 	*offset += len;
 
-	printk("Data read: %s of sizee %ld\n", mem0Dev->data, mem0Dev->bufferSize);
+	printk("Data read: %s of size: %ld\n", mem0Dev->data, mem0Dev->bufferSize);
 
 	return 0;
 
