@@ -21,6 +21,22 @@ TSC
 
     Arhitekurno nedovisna funkcija je get_cycles(). 
 
+Trenutni čas
+    Da dobimo trenutni čas uporabi funcijo:
+        ktime_t ktime_get_real(void);
+        Nahaja se v  <linux/timekeeping.h>
+
+Zakasnitve
+    Gonilniki morajo pogosto zakasniti izvševanje določenega dela kode.
+    Običajni zato, da ima strojna oprema čaz za neko opravilo.
+    Obstaja več načinov tvorbe zakasnitve:
+        - Dolge zakasnitve
+            - Zaposleno čakanje
+              Najenostavnješa rešitev -> zanka, ki preverja števec jiffies
+              jiffies je deklariran kot volatile (pomembno!)
+              Problem tukaj je, da če jedro ni konigurirano za prekinjevalno
+              razvrščanje (te zanke sploh je moremo prekiniti) ali 
+
 1. make -C /usr/src/linux-headers-$(uname -r) M=$(pwd) modules
 2. sudo insmod ime_modula.ko
 3. dmesg
