@@ -7,7 +7,7 @@
 
 MODULE_LICENSE("GPL");
 
-int zacni_modul(void);
+int start_module(void);
 void koncaj_modul(void);
 int odpri(struct inode *, struct file *);
 int sprosti(struct inode *, struct file *);
@@ -25,7 +25,7 @@ struct file_operations fops = {
 module_init(zacni_modul);
 module_exit(koncaj_modul);
 
-int zacni_modul(void)
+int start_module(void)
 {
 	Major = register_chrdev(0, DEVICE_NAME, &fops);
 	if (Major < 0) {
