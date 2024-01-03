@@ -55,6 +55,8 @@ int start_module(void) {
 
 void end_module(void) {
 
+	kfree(mem0Dev->buffer);
+	kfree(mem0Dev);
 	unregister_chrdev(Major, DEVICE_NAME);
 
 }
