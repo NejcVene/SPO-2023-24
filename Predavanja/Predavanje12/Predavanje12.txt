@@ -1,0 +1,27 @@
+Časovniki v jedru
+    HW števec pošilja prekinitive (interrupt), kar potem sproži, da
+    CPE gre izvajat PSP (prekinitveno servisni podprogram); tukaj je navedeno
+    kaj se naredi, ko se pojavi neka prekinitev.
+
+    V Linux vrednost HZ pove pogostost generiranja časovnih prekinitev na sekundo (tick rate).
+    Na PC-jih je HZ danes običajno med 100 in 1000
+    Interni števec je 64 bitna spremenljivka in se imenuje jiffies_64 (ob zagonu sistema se
+    začne z 0).
+    Običjano se pri pisanju gonilnikov dostopa do spremenljivke jiffies (32 bitna vrednost), do
+    katere je dostop hitrejši. Vse to se nahaj v <linux/jiffies.h>
+    Ta jiffies vrednost lahko enostavno prebereš npr. unsigned long j = jiffies;
+
+    Števec prej ali slej pride "naokoli". Kdaj pa to naredi?
+        Rečmo, da je HZ = 1000, torej 4 * 10^4 / 24 * 36 = (cca.) 46 dni.
+
+TSC
+    TSC šteje urine periode. To vrednost lahko tudi peberemo.
+    Da se vrednost prebere, uporabi naslednji makro:
+        rdtsc() -> vrenost števca v unsigned long long.
+
+    Arhitekurno nedovisna funkcija je get_cycles(). 
+
+1. make -C /usr/src/linux-headers-$(uname -r) M=$(pwd) modules
+2. sudo insmod ime_modula.ko
+3. dmesg
+4. sudo rmmod ime_modula

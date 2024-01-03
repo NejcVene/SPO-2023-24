@@ -1,0 +1,1 @@
+cmd_/home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje12/timer_jiffies.mod := { echo  /home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje12/timer_jiffies.o;  echo; } > /home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje12/timer_jiffies.mod
