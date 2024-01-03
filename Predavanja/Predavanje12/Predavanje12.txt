@@ -214,6 +214,82 @@ Upravljanje z V/I vrati
         void outl(unsigned longword, unsigned port);
 
 Uporaba bitnih operacij
+    Bitwise (bit po bit)
+    Bitne so, ker se ločijo od logičnih operacij.
+    && -> logični IN
+    &  -> bitni IN
+    Operacije:
+        - Pomik v levo <<
+        - Pomik v desno >>
+        - Bitni IN &
+        - Bitni ALI |
+        - Eniški komplemnet ~
+        - XOR ^
+    Primeri:
+        - 9 << 3
+          Iz 00001001 rata 01001000 (enako kot množnje s 2^3)
+        - 9 >> 2
+          Iz 00001001 rata 00000010 (enako kot deljenje s 2^2)
+        - 00110010 (50) & 01010110 (86). Gre vsak biti posebej
+          00110010 &
+          01010110 = 00010010
+        - 00110010 (50) | 01010110 (86). Gre vsak biti posebej
+          00110010 |
+          01010110 = 01110110 (118)
+        - ~(00110010) = 11001101
+        - 00110010 (50) ^ 01010110 (86). Gre vsak biti posebej
+          00110010 ^
+          01010110 = 01100100
+    Uporaba:
+        - Nastavljanje bita
+          R = R | (1 << 5) (na 5 mesto/index)
+        - Reset bita
+          R = R & ~(1 << 5)
+        - Branje bita
+          if (R & (1 << 5)) (ali je 5 bit == 1?)
+
 
 V/I pomnilnik
+    CPE vidi navidezne naslove, gonilniku pa morajo biti vidni fizični naslovi,
+    zato se predhodno kliče funkcijo ioremap:
+        void *ioremap(phys_addr, size);
+        Vrne virtualni naslov (za CPE)
+    Če ni tabel strani, izgledajo V/I pomnilniške lokacije podobno
+    kot V/I vrata.
 
+Alokacija in mapiranje V/I pomnilnika
+    • Področje V/I pomnilnika je treba pred uporabo
+alocirati
+#include <linux/ioport.h>
+struct resource *request_mem_region(
+unsigned long start,
+unsigned long len,
+char *name);
+• Ta funkcija alocira pomnilniško področje len bajtov, začenši
+pri start
+• Če ne uspe, vrne NULL
+• Vse alokacije V/I pomnilnika so navedene v /proc/iomem
+
+Dostopanje do V/I pomnilnika
+    Namesto, da narediš dereferenco nekega naslova, 
+    rajši uporabi eno od teh funkcij:
+        unsigned int ioread8(void *addr);
+        unsigned int ioread16(void *addr);
+        unsigned int ioread32(void *addr);
+        • addr dobimo od ioremap, vrnjena vrednost pa je prebrana
+          iz V/I pomnilnika
+    • Podobno imamo funkcije za pisanje v V/I pomnilnik:
+        void iowrite8(u8 value, void *addr);
+        void iowrite16(u16 value, void *addr);
+        void iowrite32(u32 value, void *addr);
+    • Če imamo opravka z blokom V/I pomnilnika,
+      uporabimo naslednje funkcije:
+        void memset_io( void *addr,
+        u8 value,
+        unsigned int count);
+        void memcpy_fromio(void *dest,
+        void *source,
+        unsigned int count);
+        void memcpy_toio(void *dest,
+        void *source,
+        unsigned int count);
