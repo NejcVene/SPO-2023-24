@@ -8,6 +8,7 @@
 
 MODULE_LICENSE("GPL");
 
+// struct which will have data about the inputed string
 struct mem0_dev {
 	char *buffer;
 	size_t bufferSize;
@@ -43,17 +44,20 @@ int start_module(void) {
 	}
 	printk(KERN_INFO "Start: major is: %d.\n", Major);
 
+	// allocate memory for mem0_dev
 	mem0Dev = kmalloc(sizeof(struct mem0_dev), GFP_KERNEL);
 	if (!mem0Dev) {
 		printk(KERN_ALERT "Start: uld not allocate memory\n");
 		return -ENOMEM;
 	}
+	// set it all to 0
 	memset(mem0Dev, 0, sizeof(struct mem0_dev));
 
 	return 0;
 
 }
 
+// when module ends free memory
 void end_module(void) {
 
 	mem0_clenup(mem0Dev);
@@ -76,15 +80,17 @@ ssize_t read(struct file *filp, char __user *buff, size_t len, loff_t *offset) {
 
 	size_t size = mem0Dev->bufferSize;
 
-	if (*offset >= size) { // all was read
+	if (*offset >= size) { // chehck if everything was read
 		return 0;
 	}
 
 	if (len > size - *offset) {
-		len = size - *offset; // how big a buffer is needed
+		len = size - *offset; // calculate how big a buffer is needed
 	}
 
+	// send to user space
 	if (copy_to_user(buff, mem0Dev->buffer, len) ) {
+		// if it fails, then release memory
 		mem0_clenup(mem0Dev);
 		return -EFAULT;
 	}
@@ -99,15 +105,19 @@ ssize_t read(struct file *filp, char __user *buff, size_t len, loff_t *offset) {
 
 ssize_t write(struct file *filp, const char __user *buff, size_t len, loff_t *offset) {
 
+	// allocate len amount of memory
 	mem0Dev->buffer = kmalloc(len, GFP_KERNEL);
 	if (!mem0Dev->buffer) {
+		// if it fails, then release memory
 		printk(KERN_ALERT "Write: could not allocate memory\n");
 		mem0_clenup(mem0Dev);
 		return -ENOMEM;
 	}
 	mem0Dev->bufferSize = len;
 
+	// to kernel space
 	if (copy_from_user(mem0Dev->buffer, buff, len)) {
+		// if it fails, then release memory
 		mem0_clenup(mem0Dev);
 		return -EFAULT;
 	}
@@ -122,10 +132,13 @@ ssize_t write(struct file *filp, const char __user *buff, size_t len, loff_t *of
 
 void mem0_clenup(struct mem0_dev * mem0Dev) {
 
+	// check if pointer has memory allocated
 	if (mem0Dev) {
+		// if it has, then free buffer for string
 		kfree(mem0Dev->buffer);
 	}
 
+	// free memory allocated for struct
 	kfree(mem0Dev);
 	unregister_chrdev(Major, DEVICE_NAME);
 
