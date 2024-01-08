@@ -8,5 +8,10 @@
 *.mod
 *.order
 *.symvers
+*.ko.cmd
+*.mod.cmd
+*.mod.o.cmd
+*.o.cmd
+.modules.order.cmd
 
 *.json
