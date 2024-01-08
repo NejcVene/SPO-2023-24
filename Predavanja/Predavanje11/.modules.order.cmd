@@ -1,1 +1,0 @@
-cmd_/home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje11/modules.order := {   echo /home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje11/sc1.ko; :; } | awk '!x[$$0]++' - > /home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje11/modules.order

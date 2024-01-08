@@ -1,1 +1,0 @@
-cmd_/home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje11/sc1.ko := ld -r  -m elf_x86_64 -z noexecstack   --build-id=sha1  -T scripts/module.lds -o /home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje11/sc1.ko /home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje11/sc1.o /home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje11/sc1.mod.o;  true

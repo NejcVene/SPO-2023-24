@@ -1,1 +1,0 @@
-cmd_/home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje11/Module.symvers := sed 's/\.ko$$/\.o/' /home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje11/modules.order | scripts/mod/modpost -m -a  -o /home/student/FRI/SPO/SPO-2023-24/Predavanja/Predavanje11/Module.symvers -e -i Module.symvers   -T -
