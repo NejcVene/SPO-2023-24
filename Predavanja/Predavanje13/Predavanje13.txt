@@ -191,3 +191,12 @@ Primer2
         on = !on;
         GPIO_out(GPIO, on);
     }
+
+Izpit:
+    Literaturo imaš lahko npr. na USB. Na teoriji ne smeš met literature.
+    Izpit (programiranje) 1 uro + teroija (30 min, do 40 min; odvisno
+    od števila vprašanj).
+    Dela se na šolskih računalnikih.
+    Kodo lahko komentiraš
+    Dobro je, da se stvar prevede.
+    
