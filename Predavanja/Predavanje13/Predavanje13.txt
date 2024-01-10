@@ -1,0 +1,193 @@
+V/I vrata
+    Alokacija s uporabo request_region.
+    Na vrata lahko pišemo ali beremo.
+    Vrata je potrebno sprostiti s release_region.
+
+Na naslovu 0x7E2000000 še začne GPIO. Konča se pa
+na 0x7E2000B0. V tem interavlu bus addressov je
+GPIO.
+Fizičen naslov, ki temu ustreza je 0x3F2000000
+(vsak register je 32 biten; vsak register ima 4 bajte).
+Zadnji register za GPIO je na naslovu 0x3F2000B0.
+Uporabljali bomo fizične naslove.
+#define GPIO_BASE 0x3F200000
+#define RANGE     0xB4
+
+GPFSEL so registri za izbiro funkcije (function select)
+    GPFSEL0 je na naslovu 0x3F200000 (to je bazni naslov) in ima odmik 0
+    xx|FSEL9|...|FSEL1|FSEL0
+    ^ rezervirano
+    GPFSEL1 se nahaja na 0x3F00004 in odmik od baznega naslova je 4.
+
+    GPFSEL2 se nahaja na odmiku 0x08
+    GPFSEL3 se nahaja na odmiku 0x0C
+    GPFSEL4 se nahaja na odmiku 0x10
+    GPFSEL5 se nahaja na odmiku 0x14
+
+GPSET registri
+    Teti registri nastavijo pin, na vhod ali izhod.
+    GPSET0 ima odmik 0x1C
+    pin31|...|pin2|pin1|pin0
+    GPSET1 ima odmik 0x20
+    x|pin21|...|pin32 (bit 0)
+
+0   GPFSEL0
+4   GPFSEL1
+8   GPFSEL2
+0C  GPFSEL3
+10  GPFSEL4
+14  GPFSEL5
+18  XXXXXX
+1C  GPSET0
+20  GPSET1
+24  XXXXXX
+28  GPCLR0
+2C  GPCLR1
+30  XXXXXX  
+34  GPLEV0
+38  GPLEV1
+
+GPCLR0 ima odmik 0x28
+    1 -> clear
+    0 -> no change
+GPCLR1 ima odmik 0x2C
+    1 -> clear
+    0 -> no change
+
+GPLEV0
+    pin lever register. Bere vhod (kakšno je stanje na pinu).
+    0 je pin0
+    1 je pin1
+    0 -> nizko stanje
+    1 -> visoko stanje
+GPLEV1
+    0 je pin32
+    do 21?
+
+Lahko uporabimo stukturo, v katero PO VRSTI (to je pomembno)
+postavimo registre, ki jih nato uporabljamo.
+
+Primer1
+    Prižiganje in ugašanje LED diode na določenem GPIO pinu s
+    pisanjem v znakovni gonilnik.
+    
+    write -> driver -> LED
+    Rabimo tudi upor, da omeji tok čez diodo.
+    --upor-- npr. 220 ohm
+           |
+          LED
+           |
+    --------
+
+    Gonilnik prižge LED diodo, če mu pošljemo bajt 0x01
+    oz. ugasne LED diodo, če pošljemo bajt 0x00.
+    Uporabimo GPIO pin 27 (fizična lokacija je pin 13)
+
+    Init funkcija:
+        1. Registriramo gonilnik.
+           (ta bo globalna spr.) Major = register_chrdev(0 (izbere jedro), "ime_gonilnika", &fops (file ops.));
+           printk(Major); -> pogledi s dmesg kolk je Major number
+           mknod uporabi za ustvarjanje posebne znakovne datoteke.
+           if (Major < 0) {
+                printk(KERN_ALERT "error")
+                return Major;
+           }
+        2. Naredimo request za pomn. na naslovu 0x3F2 (GPIO_BASE).
+           Velikosti 180 bajtov.
+           got_mem_reg = 1; (to je globalna spr.)
+           if (request_mem_region(0x3F200000, RANGE (180), "ime_gonilnika") == NULL) {
+                got_mem_reg = 0; // na ta način preverimo pri exit, ali je treba kaj sprostiti
+           }
+           u8addr *addr (tudi globalna spr.) = ioremap();
+           return 0;
+        3. Preslikamo fizične naslove v navidezne z ioremap
+
+    Exit funkcija:
+        1. Odregistriramo gonilnik
+           unregister_chrdev();
+           if (got_mem_reg) {
+                release_region();
+           }
+        2. Sprostimo kos pomn. če smo ga res zasedli
+        3. Kličemo iounmap
+    
+    Open funkcija:
+        1. Za ustrzni GPIO pin počistimo nastavitve (napišeš 0 noter).
+           // nastavitve za GPIO pin 27 (uporabimo GPFSEL2)
+           int GPFSEL = GPIOPIN / 10; // dobimo 2
+           bit = 3 * (GPIO_PIN % 10) // dobimo 21
+           int config = 1 << bit;
+           iowrite(config, addr + 4 * GPFSEL); // tole poda 0x3F200008
+        2. PIN nastavimo n izhod, ker bo krmilil LED
+           GPFSEL izhod: 001 postavimo na ustrezno mesto.
+
+    Release funkcija:
+    Write funkcija:
+        Ne dereferencirat user space bufferja, ker ne bo delal
+        Zato je treba naredit copy_from_user
+        u8 ledON; (ta je globalna)
+        if (offset >= size) {
+            return 0;
+        }
+        if (len > size) {
+            len = size;
+        }
+        if (copy_from_user(&ledON, buffer, len)) {
+            napaka
+        }
+        if (ledON) {
+            // GPSET0, offset 0x1C
+            iowrite32(1 << GPIO_PIN, addr + 0x1C + 4 * (GPIO_PIN / 32));
+        } else {
+            iowrite32(1 << GPIO_PIN, addr + 0x28 + 4 * (GPIO_PIN / 32));
+        }
+    
+    Kako sedaj to uporabiti:
+        npr. echo -n -e '\x01' > ime_gonilnika
+        npr. echo -n -e '\x00' > ime_gonilnika
+
+Primer2
+    Utripanje LED diode s pomočjo časovnika
+    Da omogočimo večjo splošnost, lahko definiramo kar strukturo
+    za opis registrov GPIO:
+        struct GpioRegisters { // vrsti red je pomemben
+            uint32_t GPFSEL[6];
+            uint32_t reserved1;
+            uint32_t GPSET[2];
+            uint32_t reserved2;
+            uint32_t GPCLR[2];
+            uint32_t reserved3;
+            uint32_t GPLEV[2];
+        };
+
+    GPIO_PIN = 15;
+    init() {
+        register_chrdev;
+        request_mem_region;
+        = (struct *) ioremap(GPIO_BASE, pGpio)
+    }
+    GPIO_funckija(int GPIO, unsigned koda (000 ali 001)) {
+        unsigned regIndex, bit, old_val, maska;
+        regIndex = GPIO / 10; // za 15 -> 1 (GPFSEL1)
+        bit = 3 * (GPIO % 10);
+        old_value = pGpio->GPFSEL[regIndex];
+        maska = 0b111 << bit;
+        pGpio-> GPFSEL[regIndex] = old_val &~maska | (koda << bit) & maska;
+    }
+
+    void GPIO_out(int GPIO, val) {
+        regIndex = GPIO / 32;
+        bit = GPIO % 32; // to da 15
+        if (val) {
+            pGpio->GPSET[regIndex] = 1 << bit;
+        } else {
+            pGpio->GPCLR[regIndex] = 1 << bit;
+        }
+    }
+
+    timer_callback() {
+        static bool on = false;
+        mod_timer(&timer1, jiffies + ???)
+        on = !on;
+        GPIO_out(GPIO, on);
+    }
