@@ -1,3 +1,16 @@
+Sistemski klici datotek, torej funkcije
+open, read, write, lseek so nebufferiran oz. direktne, kar pomeni
+da vsako branje/pisanje povzroči sistemski klic v jedru.
+Nebufferiran izhod uporabiš takrat kadar rabiš takojšen izpis.
+
+Funkcija open ima oflags, ki povejo način dostopa do datoteke/direktorija, ki
+ga želimo odpreti. Če je tukaj naveden O_CREAT je OBVZEZNO treba še dodati
+mode, ki so pa pravice, ki jih ima UGO nad to krirano datoteko.
+O_CREAT | O_WRONLY ne izbirše vsebino datoteke
+O_CREAT | O_WRONLY | O_TRUNC pa izbriše vsebno datoteke, ker je O_TRUNC zraven.
+
+
+
 Obdelava napak
     void perror(char *) -> izpiše poleg "generic" napake še tisto
                       kar jaz noter napišem v to funkcijo.
@@ -23,3 +36,21 @@ Obdelava napak
                  symbol errno (short for "error number").
                  Tudi definira makrote za napake, npr:
                     ENOENT  -> 2 -> No such file or directory
+
+Datoteke
+    int dup(int fd) -> Duplicate FD, returning a new file descriptor on the same file.
+                       Ta novi fd je najmnajša vrednost, ki se lahko uporabi (enak način
+                       kakor open deluje).
+                       Primer:
+                            if ((newFd = dup(fd)) < 0) {
+                                err("dup")
+                            }
+    int dup2(int fd, int fd2) -> Duplicate FD to FD2, closing FD2 and making it open on the same file.
+                                 Tukaj lahko sami izberemo novi fd, npr. 10.
+                                 Lahko damo tudi enega, ki se že uporablja npr. 1 (STDOUT_FILENO);
+                                 to potem pomeni, da vse funckije ki uporabjajo STDOUT_FILENO npr. printf
+                                 pišejo kamor kaže ta originalni fd npr. v datoteko.
+                                 Primer:
+                                    if ((newFd3 = dup2(fd, newFd3)) < 0) {
+                                        err("dup2")
+                                    }

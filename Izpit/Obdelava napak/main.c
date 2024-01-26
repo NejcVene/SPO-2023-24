@@ -3,6 +3,8 @@
 #include <errno.h>
 #include <string.h>
 
+#define err(msg) { perror(msg); exit(1); }
+
 int main(void) {
 
     FILE *f = fopen("datoteka_ki_ne_obstaja.txt", "r");
