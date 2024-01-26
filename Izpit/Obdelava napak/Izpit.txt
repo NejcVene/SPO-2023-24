@@ -9,6 +9,17 @@ mode, ki so pa pravice, ki jih ima UGO nad to krirano datoteko.
 O_CREAT | O_WRONLY ne izbirše vsebino datoteke
 O_CREAT | O_WRONLY | O_TRUNC pa izbriše vsebno datoteke, ker je O_TRUNC zraven.
 
+Vsaka datoteka ima svoj iNode ter svojo iNode strukturo, ki vsebuje
+metapodatke o njen, razen imena in vsebine.
+Število iNodov je omejeno na posamezno particijo -> omejeno število datotek na sistemov (posledično)
+iNode številka jek edinstvena, vendar na particijo.
+Do te strkture dostopaš preko funckije stat.
+Za odprete datoteke moreš uporabit fstat, ki vzame FD datoteke.
+Za simbolične poveuzave moreš uprabit lstat, ki pa vrne podatke
+o tej povezavi, NE o datoteki, na katero kaže.
+Prvi element te iNode struktre (st_mode) ti pove tip in dovoljenja.
+Za tipe preverit uporabi makrote.
+Vse to najdeš v <sys/stat.h>
 
 
 Obdelava napak
@@ -54,3 +65,36 @@ Datoteke
                                     if ((newFd3 = dup2(fd, newFd3)) < 0) {
                                         err("dup2")
                                     }
+
+Datoteke in direktoriji
+    mode_t umask(mode_t cmask) -> določa masko za "mode" pri ustvarjanju novih
+                                  datotek.
+                                  Primer:
+                                    umask(0);
+                                    if (creat("foo", S_IRUSR | S_IWUSR | S_IRGRP
+                                            | S_IWGRP | S_IROTH | S_IWOTH) < 0)
+                                        err("creat error for foo")
+                                    // if (creat("foo", 0666) < 0)
+                                    umask(S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+                                    // umask( 066 );
+                                    if (creat("bar", 0666) < 0)
+                                        err("creat error for bar")
+        Tole je vidit kakor, da tisto kar daš v umask se potem NE dovoljuje
+        ko se datoteka ustvari.
+        umask(0) naredi to, da dovoli vse nastavljati, zato ima foo
+        vse tisto, kar je bilo v creat nastavljeno.
+        POTEM pa naredimo umaks za vse pravice pri group in other.
+        KO gremo potem naredit datoteko bar s pravicami 0666 ima
+        06 pravico samo user, group pa other nima nič, ker maska prepoveduje.
+        Pogledi si v Predavanje3.txt
+
+int truncate(const char *pathname, off_t length) -> datoteko skrči na dolžine lenght, če je ta daljša
+                                                    od navedenega length. Vsi podatki, po lenght
+                                                    se izgubijo.
+                                                    Če je pa datoteka manjša od navedenga lenght,
+                                                    potem se ta PODALJŠA in napolni z \0.
+int ftruncate(int fd, off_t length) -> enako kot zgoraj, le da mora biti datoteka odprta
+                                       z uporabo O_WRONLY!
+Obadva sta v #include <sys/types.h>
+             #include <unistd.h>
+
