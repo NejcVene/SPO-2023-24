@@ -1,0 +1,25 @@
+Obdelava napak
+    void perror(char *) -> izpiše poleg "generic" napake še tisto
+                      kar jaz noter napišem v to funkcijo.
+                      Print a message describing the meaning of 
+                      the value of errno.
+                      Primer:
+                        #include <strlib.h>
+                        perror("Custom error");
+                      Izhod je potem:
+                        Custom error: Bo such file or dir.
+                        
+    char *strerror(int __errnum) -> Return a string describing the 
+                    meaning of the `errno' code in ERRNUM.
+                    Primer:
+                        #include <string.h>
+                        char *err = strerror(ENOENT; lahko tudi kar številko);
+                        printf("strerror: %s\n", err);
+                    Izhod:
+                        strerror: No such file or directory
+    
+    <errno.h> -> is a header file in the standard library of the C programming language. 
+                 It defines macros for reporting and retrieving error conditions using the 
+                 symbol errno (short for "error number").
+                 Tudi definira makrote za napake, npr:
+                    ENOENT  -> 2 -> No such file or directory
