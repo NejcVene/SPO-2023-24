@@ -21,6 +21,16 @@ Prvi element te iNode struktre (st_mode) ti pove tip in dovoljenja.
 Za tipe preverit uporabi makrote.
 Vse to najdeš v <sys/stat.h>
 
+Datotečni sistem
+    Disk ima lahko enega ali več particij.
+    Vsaka od teh particij pa lahko vsebuje datotečni sistem.
+    Datotečni sistem podrobneje:
+        Driektorij je tabela na disku, ki vsebuje imena datotek
+        in njihove iNode številke (samo to in nič drugega).
+        Prva dva objekta v direktoriju sta starševski in trenutni
+        direktorij (. in ..).
+
+
 
 Obdelava napak
     void perror(char *) -> izpiše poleg "generic" napake še tisto

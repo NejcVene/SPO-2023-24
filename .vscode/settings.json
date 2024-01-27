@@ -2,7 +2,8 @@
     "files.associations": {
         "stdio.h": "c",
         "stdlib.h": "c",
-        "socket.h": "c"
+        "socket.h": "c",
+        "unistd.h": "c"
     },
     "cmake.configureOnOpen": false
 }
