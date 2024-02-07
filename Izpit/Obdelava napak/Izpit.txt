@@ -108,3 +108,11 @@ int ftruncate(int fd, off_t length) -> enako kot zgoraj, le da mora biti datotek
 Obadva sta v #include <sys/types.h>
              #include <unistd.h>
 
+sscanf -> STRING scanf -> reads formatted input from a STRING.
+fscanf -> reads formatted input from a STREAM.
+
+Procesi:
+    int status = system("ls -la | grep 'p1'"); To dela
+    int system(const char *__command)
+    Execute the given line as a shell command.
+
